@@ -16,10 +16,10 @@ python3 -m venv .env
 source .env/bin/activate
 pip3 install -r requirements.txt
 
-# or your equivalent for your shell
+# or your equivalent for your shell (e.g. ~/.zshrc)
 echo 'export PATH=~/.rebbletool/rebbletool/bin:$PATH' >> ~/.bash_profile
 
-rebbletool  # should print help!
+rebble  # should print help!
 ```
 
 ```bash
