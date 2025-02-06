@@ -1,6 +1,7 @@
 from __future__ import absolute_import, print_function
 __author__ = 'katharine'
 
+import sys
 import os
 import subprocess
 import logging
@@ -32,11 +33,26 @@ class SDKProjectCommand(SDKCommand):
         command = [os.path.join(virtualenv, 'bin', 'python'), self.waf_path, command] + args
         logger.debug("waf command: %s", subprocess.list2cmdline(command))
         env = os.environ.copy()
-        env['PYTHONHOME'] = virtualenv
+        env['PYTHONHOME'] = os.path.abspath(virtualenv)
+        env['VIRTUAL_ENV'] = os.path.abspath(virtualenv)
+
+        # add a few other paths to our bins, so the waf script can find them
+        env['PATH'] = ':'.join([
+            os.path.abspath(os.path.join(virtualenv, 'bin')),
+            os.path.abspath(os.path.join(__file__, '../../../../../bin')),  # our bin with pebble bin, etc
+            os.path.abspath(os.path.join(__file__, '../../../../../arm-cs-tools/bin')),  # build tools
+            env['PATH']
+        ])
+        env['PYTHONPATH'] = ':'.join(sys.path)
         env['NODE_PATH'] = node_modules
         env['NOCLIMB'] = "1"  # This prevents waf from climbing into parent directories and executing commands
+
         if extra_env is not None:
             env.update(extra_env)
+
+        logger.debug("env: ", env)
+        logger.debug("run: %s" % subprocess.list2cmdline(command))
+
         subprocess.check_call(command, env=env)
 
     def __call__(self, args):

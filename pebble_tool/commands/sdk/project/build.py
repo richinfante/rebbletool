@@ -36,9 +36,40 @@ class BuildCommand(SDKProjectCommand):
             extra_env = {}
             if args.debug:
                 extra_env = {'CFLAGS': os.environ.get('CFLAGS', '') + ' -O0'}
-            self._waf("configure", extra_env=extra_env, args=waf)
+            try:
+                self._waf("configure", extra_env=extra_env, args=waf)
+            except Exception as err:
+                # this is the WAF directory for the latest SDK (4.3)
+                p = os.path.join(self.get_sdk_path(), 'pebble', '.waf3-1.7.11-951087d39789950ed009f0c86ce75e7b', 'waflib', 'Context.py')
+
+                # check if the waf file exists
+                if not os.path.exists(p):
+                    print('WAF not found - ensure SDK has been installed.')
+                    exit(1)
+
+                # read the contents of the file we know we modified in patch
+                contents = open(p, 'r').read()
+
+                # check if the patch has been applied
+                if 'import os,imp,sys' in contents:
+                    print('Detected sdk needing patching, applying: sdk.patch')
+                    wd = os.path.abspath(os.path.join(self.get_sdk_path(), '../../../'))
+                    print(wd)
+                    subprocess.check_call([
+                        'bash', '-c', 'patch -p1 < ../sdk.patch'
+                    ], cwd=wd)
+
+                    print('Patching complete, retrying configure')
+                    self._waf("configure", extra_env=extra_env, args=waf)
+                else:
+                    print('SDK looks patched, some other error')
+                    raise err
+
             self._waf("build", args=waf)
-        except subprocess.CalledProcessError:
+        except subprocess.CalledProcessError as e:
+            print(e)
+            import traceback
+            traceback.print_exc()
             duration = time.time() - start_time
             post_event("app_build_failed", build_time=duration)
             raise BuildError("Build failed.")

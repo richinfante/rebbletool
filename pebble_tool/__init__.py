@@ -30,20 +30,21 @@ def run_tool(args=None):
     logging.basicConfig()
     maybe_apply_wsl_hacks()
     analytics_prompt()
-    parser = argparse.ArgumentParser(description="Pebble Tool", prog="pebble",
+    parser = argparse.ArgumentParser(description="Rebble Tool", prog="rebble",
                                      epilog="For help on an individual command, call that command with --help.")
-    version_string = "Pebble Tool v{}".format(__version__)
+    version_string = "Rebble Tool v{}".format(__version__)
     if sdk_version() is not None:
         version_string += " (active SDK: v{})".format(sdk_version())
     parser.add_argument("--version", action="version", version=version_string)
     register_children(parser)
     args = parser.parse_args(args)
+
     if not hasattr(args, 'func'):
         parser.error("no subcommand specified.")
     try:
         args.func(args)
     except ToolError as e:
-        parser.exit(message=unicode(e)+"\n", status=1)
+        parser.exit(message=str(e)+"\n", status=1)
         sys.exit(1)
 
 
@@ -51,7 +52,7 @@ def run_tool(args=None):
 def wait_for_cleanup():
     import time
     now = time.time()
-    wait_for_analytics(2)
-    wait_for_update_checks(2)
+    # wait_for_analytics(2)
+    # wait_for_update_checks(2)
     logging.info("Spent %f seconds waiting for analytics.", time.time() - now)
     config.save()

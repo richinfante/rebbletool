@@ -226,7 +226,7 @@ class ManagedEmulatorTransport(WebsocketTransport):
         }
 
         command.extend(platform_args[self.platform])
-        logger.info("Qemu command: %s", subprocess.list2cmdline(command))
+        print("Qemu command: %s", subprocess.list2cmdline(command))
         process = subprocess.Popen(command, stdout=self._get_output(), stderr=self._get_output())
         time.sleep(0.2)
         if process.poll() is not None:
@@ -239,7 +239,7 @@ class ManagedEmulatorTransport(WebsocketTransport):
 
     def _wait_for_qemu(self):
         logger.info("Waiting for the firmware to boot.")
-        for i in range(20):
+        for i in range(60):
             time.sleep(0.2)
             try:
                 s = socket.create_connection(('localhost', self.qemu_serial_port))

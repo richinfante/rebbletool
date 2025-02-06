@@ -115,7 +115,7 @@ class PebbleCommand(BaseCommand):
             if PebbleTransportEmulator.get_running_emulators():
                 handler_impl = PebbleTransportEmulator
             else:
-                raise ToolError("No pebble connection specified.")
+                raise ToolError("No pebble connection specified. See: https://developer.rebble.io/developer.pebble.com/guides/tools-and-resources/pebble-tool/index.html")
 
         transport = handler_impl.get_transport(args)
         connection = PebbleConnection(transport, **self._get_debug_args())

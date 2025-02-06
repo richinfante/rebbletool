@@ -65,7 +65,7 @@ class ToolAppInstaller(object):
         self.progress_bar.update(total_sent)
 
     def _install_via_websocket(self, pebble, pbw):
-        with open(pbw) as f:
+        with open(pbw, 'rb') as f:
             print("Installing app...")
             pebble.transport.send_packet(WebSocketInstallBundle(pbw=f.read()), target=MessageTargetPhone())
             try:

@@ -39,7 +39,7 @@ class AnalyseSizeCommand(SDKProjectCommand):
             print("\n======{}======".format(path))
             sections = binutils.analyze_elf(path, 'bdt', use_fast_nm=True)
 
-            for s in sections.itervalues():
+            for s in sections.values():
                 s.pprint(args.summary, args.verbose)
 
     @classmethod

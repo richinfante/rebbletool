@@ -1,2 +1,7 @@
 *.pyc
 .idea/*
+.DS_Store
+/sdk
+/arm-cs-tools
+/bin/qemu-pebble
+/toolchain

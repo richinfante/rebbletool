@@ -76,7 +76,7 @@ class PebbleAnalytics(threading.Thread):
         items = []
         for k, v in iteritems(d):
             new_key = parent_key + '_0_' + k if parent_key else k
-            if isinstance(v, collections.MutableMapping):
+            if isinstance(v, collections.abc.MutableMapping):
                 items.extend(iteritems(cls._flatten(v, new_key)))
             else:
                 items.append((new_key, v))
@@ -210,14 +210,17 @@ class PebbleAnalytics(threading.Thread):
 
 # Convenience method.
 def post_event(event, **data):
-    PebbleAnalytics.get_shared().submit_event(event, **data)
+    # PebbleAnalytics.get_shared().submit_event(event, **data)
+    pass
 
 
 def wait_for_analytics(timeout):
-    PebbleAnalytics.get_shared().wait(timeout)
+    # PebbleAnalytics.get_shared().wait(timeout)
+    pass
 
 
 def analytics_prompt():
+    return
     path = PebbleAnalytics.get_option_dir()
     if (not os.path.exists(os.path.join(path, "ENABLE_ANALYTICS"))
             and not os.path.exists(os.path.join(path, "NO_TRACKING"))):

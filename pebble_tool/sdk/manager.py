@@ -2,7 +2,7 @@ from __future__ import absolute_import, print_function
 __author__ = 'katharine'
 
 from contextlib import closing
-from distutils.util import strtobool
+# from distutils.util import strtobool
 import errno
 import json
 import os
@@ -13,6 +13,8 @@ import subprocess
 import sys
 import tempfile
 import tarfile
+import shutil
+from io import BytesIO
 
 from pebble_tool.exceptions import SDKInstallError, MissingSDK
 from pebble_tool.sdk.requirements import Requirements
@@ -23,9 +25,13 @@ from pebble_tool.util.versions import version_to_key
 
 pebble_platforms = ('aplite', 'basalt', 'chalk', 'diorite', 'emery')
 
+def strtobool(s):
+    return s.lower() == "true" or s.lower() == 'y'
+
+MAC_SDK_PATH = 'https://developer.rebble.io/s3.amazonaws.com/assets.getpebble.com/pebble-tool/pebble-sdk-4.5-mac.tar.bz2'
 
 class SDKManager(object):
-    DOWNLOAD_SERVER = "https://sdk.getpebble.com"
+    DOWNLOAD_SERVER = "https://sdk.rebble.io"
 
     def __init__(self, sdk_dir=None):
         self.sdk_dir = os.path.normpath(sdk_dir or os.path.join(get_persist_dir(), "SDKs"))
@@ -101,7 +107,14 @@ class SDKManager(object):
                     sdk_info = json.load(f_manifest)
                 path = os.path.normpath(os.path.join(self.sdk_dir, sdk_info['version']))
                 if os.path.exists(path):
-                    raise SDKInstallError("SDK {} is already installed.".format(sdk_info['version']))
+                    reinstall = input("SDK {} is already installed. Do you want to reinstall? (y/n) ".format(sdk_info['version']))
+
+                    if reinstall.lower() == 'n':
+                        raise SDKInstallError("SDK {} is already installed.".format(sdk_info['version']))
+                    else:
+                        print('Removing existing SDK...')
+                        shutil.rmtree(path)
+
                 contents = t.getnames()
                 for filename in contents:
                     if filename.startswith('/') or '..' in filename:
@@ -113,11 +126,23 @@ class SDKManager(object):
                 t.extractall(path)
             virtualenv_path = os.path.join(path, ".env")
             print("Preparing virtualenv... (this may take a while)")
-            subprocess.check_call([sys.executable, "-m", "virtualenv", virtualenv_path, "--no-site-packages"])
+            subprocess.check_call([sys.executable, "-m", "virtualenv", virtualenv_path])
             print("Installing dependencies...")
-            subprocess.check_call([os.path.join(virtualenv_path, "bin", "python"), "-m", "pip", "install", "-r",
-                                   os.path.join(path, "sdk-core", "requirements.txt")],
-                                  env={'PYTHONHOME': virtualenv_path})
+
+            # HACK
+            print('rebbletool: Patching requirements...')
+            f = open(os.path.abspath(os.path.join(os.path.basename(__file__), '../sdk_requirements.txt')), 'r').read()
+            open(os.path.join(path, "sdk-core", "requirements.txt"), 'w').write(f)
+
+            cmd = [os.path.join(virtualenv_path, "bin", "pip"), "install", "-r",
+                                   os.path.join(path, "sdk-core", "requirements.txt")]
+            # print(cmd)
+            try:
+                subprocess.check_call(['bash', '-c', 'source .env/bin/activate; pip install -r sdk-core/requirements.txt'], cwd=os.path.join(virtualenv_path, "../"))
+            except Exception as e:
+                print(e)
+                exit(1)
+
             package_json = os.path.join(path, "sdk-core", "package.json")
             if os.path.exists(package_json):
                 print("Installing JS dependencies... (this may take a while)")
@@ -127,6 +152,70 @@ class SDKManager(object):
                 invoke_npm(["install", "--silent"], cwd=path)
 
             self.set_current_sdk(sdk_info['version'])
+
+            print('rebbletool: downloading sdk toolchain...')
+            if sys.platform.startswith('darwin'):
+                platform = 'macos'
+                sdkpath = MAC_SDK_PATH
+            elif sys.platform.startswith('linux'):
+                platform = 'linux'
+                raise NotImplementedError("Linux not supported.")
+            else:
+                raise SDKInstallError("Couldn't figure out what requirements to install.")
+
+            print("rebbletool: downloading sdk toolchain for %s: %s..." % (platform, sdkpath))
+            req = requests.get(sdkpath)
+            fileobj = BytesIO(req.content)
+
+            toolchain_download_dir = os.path.abspath(os.path.join(self.sdk_dir, "../../toolchain"))
+            root_install_dir = os.path.abspath(os.path.join(self.sdk_dir, "../../"))
+            with tarfile.open(fileobj=fileobj, mode="r:*") as t2:
+                print('rebbletool: extract pebble toolchain sdk into', toolchain_download_dir)
+                t2.extractall(toolchain_download_dir)
+
+            # list toolchain folder
+            print('rebbletool: listing toolchain folder')
+            toolchain_items = os.listdir(toolchain_download_dir)
+
+            # should have a single item, the name of the sdk
+            # probably different for each sdk version, but example is 'pebble-sdk-4.5-mac'
+            if len(toolchain_items) != 1:
+                raise Exception('unknown toolchain folder structure: %s' % toolchain_items)
+
+            # move toolchain/bin to ../bin
+            bin_path = os.path.join(root_install_dir, 'bin')
+            if os.path.exists(bin_path):
+                shutil.rmtree(bin_path)
+            shutil.move(os.path.join(toolchain_download_dir, toolchain_items[0], 'bin'), os.path.join(root_install_dir, 'bin'))
+
+            # move toolchain/arm-cs-tools to ../arm-cs-tools
+            arm_cs_tools_path = os.path.join(root_install_dir, 'arm-cs-tools')
+            if os.path.exists(arm_cs_tools_path):
+                shutil.rmtree(arm_cs_tools_path)
+            shutil.move(os.path.join(toolchain_download_dir, toolchain_items[0], 'arm-cs-tools'), os.path.join(root_install_dir, 'arm-cs-tools'))
+
+            # remove toolchain folder
+            print('rebbletool: cleaning up toolchain folder...')
+            shutil.rmtree(os.path.join(toolchain_download_dir))
+
+            # load the waf file
+            print("rebbletool: Applying patches to SDK WAF so it can be read...")
+            waf_file = os.path.join(path, "sdk-core", "pebble", "waf")
+            f = open(waf_file, 'rb')
+            filedata = f.read()
+            f.close()
+
+            # write backup prior to patching
+            open(waf_file + '.bak', 'wb').write(filedata)
+
+            # split on the last #==>
+            contents = filedata.rsplit(b'#==>\n', 1)
+
+            # overwrite the waf file with the patched version
+            wf = open(waf_file, 'wb')
+            wf.write(contents[0].replace(b"open(sys.argv[0],'rb')", b"open(sys.argv[0] + '.bak','rb')"))
+            wf.close()
+
             print("Done.")
         except Exception:
             print("Failed.")
@@ -145,7 +234,13 @@ class SDKManager(object):
             raise SDKInstallError("SDK {} could not be downloaded.".format(version))
         path = os.path.normpath(os.path.join(self.sdk_dir, sdk_info['version']))
         if os.path.exists(path):
-            raise SDKInstallError("SDK {} is already installed.".format(sdk_info['version']))
+            reinstall = input("SDK {} is already installed. Do you want to reinstall? (y/n) ".format(sdk_info['version']))
+
+            if reinstall.lower() == 'n':
+                raise SDKInstallError("SDK {} is already installed.".format(sdk_info['version']))
+            else:
+                print('Removing existing SDK...')
+                shutil.rmtree(path)
         # For now, we ignore this field aside from bailing if it has content.
         Requirements(sdk_info['requirements']).ensure_satisfied()
         self._license_prompt()
@@ -164,7 +259,7 @@ https://developer.getpebble.com/legal/sdk-license
         result = False
         while True:
             try:
-                result = strtobool(raw_input("Do you accept the Pebble Terms of Use and the "
+                result = strtobool(input("Do you accept the Pebble Terms of Use and the "
                                              "Pebble Developer License? (y/n) "))
             except ValueError:
                 pass
@@ -240,7 +335,7 @@ subprocess.call([sys.executable, {}] + sys.argv[1:])
             os.symlink(os.path.join(build_path, 'qemu_spi_flash.bin'),
                        os.path.join(pebble_path, platform, 'qemu', 'qemu_spi_flash.bin'))
 
-        os.symlink(os.path.join(sdk_path, 'common/'), 
+        os.symlink(os.path.join(sdk_path, 'common/'),
                    os.path.join(pebble_path, 'common'))
 
         with open(os.path.join(dest_path, 'manifest.json'), 'w') as f:
@@ -252,7 +347,7 @@ subprocess.call([sys.executable, {}] + sys.argv[1:])
             }, f)
 
         print("Preparing virtualenv... (this may take a while)")
-        subprocess.check_call([sys.executable, "-m", "virtualenv", env_path, "--no-site-packages"])
+        subprocess.check_call([sys.executable, "-m", "virtualenv", env_path])
         print("Installing dependencies...")
         print("This may fail installing Pillow==2.0.0. In that case, question why we still force 2.0.0 anyway.")
         if sys.platform.startswith('darwin'):

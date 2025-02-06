@@ -1,0 +1,648 @@
+diff --git a/SDKs/4.3/sdk-core/pebble/.waf3-1.7.11-951087d39789950ed009f0c86ce75e7b/waflib/ConfigSet.py b/SDKs/4.3/sdk-core/pebble/.waf3-1.7.11-951087d39789950ed009f0c86ce75e7b/waflib/ConfigSet.py
+index f9fdcc7..72466ec 100644
+--- a/SDKs/4.3/sdk-core/pebble/.waf3-1.7.11-951087d39789950ed009f0c86ce75e7b/waflib/ConfigSet.py
++++ b/SDKs/4.3/sdk-core/pebble/.waf3-1.7.11-951087d39789950ed009f0c86ce75e7b/waflib/ConfigSet.py
+@@ -134,7 +134,7 @@ class ConfigSet(object):
+ 		Utils.writef(filename,''.join(buf))
+ 	def load(self,filename):
+ 		tbl=self.table
+-		code=Utils.readf(filename,m='rU')
++		code=Utils.readf(filename,m='r')
+ 		for m in re_imp.finditer(code):
+ 			g=m.group
+ 			tbl[g(2)]=eval(g(3))
+diff --git a/SDKs/4.3/sdk-core/pebble/.waf3-1.7.11-951087d39789950ed009f0c86ce75e7b/waflib/Context.py b/SDKs/4.3/sdk-core/pebble/.waf3-1.7.11-951087d39789950ed009f0c86ce75e7b/waflib/Context.py
+index ecf0d53..c43eb35 100644
+--- a/SDKs/4.3/sdk-core/pebble/.waf3-1.7.11-951087d39789950ed009f0c86ce75e7b/waflib/Context.py
++++ b/SDKs/4.3/sdk-core/pebble/.waf3-1.7.11-951087d39789950ed009f0c86ce75e7b/waflib/Context.py
+@@ -2,7 +2,7 @@
+ # encoding: utf-8
+ # WARNING! Do not edit! http://waf.googlecode.com/git/docs/wafbook/single.html#_obtaining_the_waf_file
+
+-import os,imp,sys
++import os,sys
+ from waflib import Utils,Errors,Logs
+ import waflib.Node
+ HEXVERSION=0x1070b00
+@@ -28,6 +28,9 @@ STDOUT=1
+ STDERR=-1
+ BOTH=0
+ classes=[]
++from waflib.Node import Node as node_class
++# class node_class(waflib.Node.Node):
++# 			pass
+ def create_context(cmd_name,*k,**kw):
+ 	global classes
+ 	for x in classes:
+@@ -60,8 +63,6 @@ class Context(ctx):
+ 		except KeyError:
+ 			global run_dir
+ 			rd=run_dir
+-		class node_class(waflib.Node.Node):
+-			pass
+ 		self.node_class=node_class
+ 		self.node_class.__module__="waflib.Node"
+ 		self.node_class.__name__="Nod3"
+@@ -108,7 +109,7 @@ class Context(ctx):
+ 				cache[node]=True
+ 				self.pre_recurse(node)
+ 				try:
+-					function_code=node.read('rU')
++					function_code=node.read('r')
+ 					exec(compile(function_code,node.abspath(),'exec'),self.exec_dict)
+ 				finally:
+ 					self.post_recurse(node)
+@@ -271,9 +272,10 @@ def load_module(path):
+ 		return cache_modules[path]
+ 	except KeyError:
+ 		pass
+-	module=imp.new_module(WSCRIPT_FILE)
++	import types
++	module=types.ModuleType(WSCRIPT_FILE)
+ 	try:
+-		code=Utils.readf(path,m='rU')
++		code=Utils.readf(path,m='r')
+ 	except(IOError,OSError):
+ 		raise Errors.WafError('Could not read the file %r'%path)
+ 	module_dir=os.path.dirname(path)
+diff --git a/SDKs/4.3/sdk-core/pebble/.waf3-1.7.11-951087d39789950ed009f0c86ce75e7b/waflib/Node.py b/SDKs/4.3/sdk-core/pebble/.waf3-1.7.11-951087d39789950ed009f0c86ce75e7b/waflib/Node.py
+index a7693a3..b2a59b8 100644
+--- a/SDKs/4.3/sdk-core/pebble/.waf3-1.7.11-951087d39789950ed009f0c86ce75e7b/waflib/Node.py
++++ b/SDKs/4.3/sdk-core/pebble/.waf3-1.7.11-951087d39789950ed009f0c86ce75e7b/waflib/Node.py
+@@ -279,7 +279,7 @@ class Node(object):
+ 					if maxdepth:
+ 						for k in node.ant_iter(accept=accept,maxdepth=maxdepth-1,pats=npats,dir=dir,src=src,remove=remove):
+ 							yield k
+-		raise StopIteration
++		# raise StopIteration
+ 	def ant_glob(self,*k,**kw):
+ 		src=kw.get('src',True)
+ 		dir=kw.get('dir',False)
+@@ -328,7 +328,11 @@ class Node(object):
+ 			if[]in nrej:
+ 				nacc=[]
+ 			return[nacc,nrej]
+-		ret=[x for x in self.ant_iter(accept=accept,pats=[to_pat(incl),to_pat(excl)],maxdepth=25,dir=dir,src=src,remove=kw.get('remove',True))]
++		ret = []
++		# HACK:
++		for x in self.ant_iter(accept=accept,pats=[to_pat(incl),to_pat(excl)],maxdepth=25,dir=dir,src=src,remove=kw.get('remove',True)):
++			ret.append(x)
++		# ret=[x for x in self.ant_iter(accept=accept,pats=[to_pat(incl),to_pat(excl)],maxdepth=25,dir=dir,src=src,remove=kw.get('remove',True))]
+ 		if kw.get('flat',False):
+ 			return' '.join([x.path_from(self)for x in ret])
+ 		return ret
+diff --git a/SDKs/4.3/sdk-core/pebble/.waf3-1.7.11-951087d39789950ed009f0c86ce75e7b/waflib/ansiterm.py b/SDKs/4.3/sdk-core/pebble/.waf3-1.7.11-951087d39789950ed009f0c86ce75e7b/waflib/ansiterm.py
+index 0de6171..ffd55ed 100644
+--- a/SDKs/4.3/sdk-core/pebble/.waf3-1.7.11-951087d39789950ed009f0c86ce75e7b/waflib/ansiterm.py
++++ b/SDKs/4.3/sdk-core/pebble/.waf3-1.7.11-951087d39789950ed009f0c86ce75e7b/waflib/ansiterm.py
+@@ -27,7 +27,7 @@ else:
+ 	import re,threading
+ 	is_vista=getattr(sys,"getwindowsversion",None)and sys.getwindowsversion()[0]>=6
+ 	try:
+-		_type=unicode
++		_type=str
+ 	except NameError:
+ 		_type=str
+ 	to_int=lambda number,default:number and int(number)or default
+diff --git a/SDKs/4.3/sdk-core/pebble/.waf3-1.7.11-951087d39789950ed009f0c86ce75e7b/waflib/extras/ldscript.py b/SDKs/4.3/sdk-core/pebble/.waf3-1.7.11-951087d39789950ed009f0c86ce75e7b/waflib/extras/ldscript.py
+index 60780d8..2d0c962 100644
+--- a/SDKs/4.3/sdk-core/pebble/.waf3-1.7.11-951087d39789950ed009f0c86ce75e7b/waflib/extras/ldscript.py
++++ b/SDKs/4.3/sdk-core/pebble/.waf3-1.7.11-951087d39789950ed009f0c86ce75e7b/waflib/extras/ldscript.py
+@@ -10,11 +10,11 @@ def process_ldscript(self):
+ 	if not getattr(self,'ldscript',None)or self.env.CC_NAME!='gcc':
+ 		return
+ 	def convert_to_node(node_or_path_str):
+-		if isinstance(node_or_path_str,basestring):
++		if isinstance(node_or_path_str,str):
+ 			return self.path.make_node(node_or_path_str)
+ 		else:
+ 			return node_or_path_str
+-	if isinstance(self.ldscript,basestring)or isinstance(self.ldscript,list):
++	if isinstance(self.ldscript,str)or isinstance(self.ldscript,list):
+ 		ldscripts=Utils.to_list(self.ldscript)
+ 	else:
+ 		ldscripts=[self.ldscript]
+diff --git a/SDKs/4.3/sdk-core/pebble/.waf3-1.7.11-951087d39789950ed009f0c86ce75e7b/waflib/extras/pebble_sdk.py b/SDKs/4.3/sdk-core/pebble/.waf3-1.7.11-951087d39789950ed009f0c86ce75e7b/waflib/extras/pebble_sdk.py
+index e94f134..e30f491 100644
+--- a/SDKs/4.3/sdk-core/pebble/.waf3-1.7.11-951087d39789950ed009f0c86ce75e7b/waflib/extras/pebble_sdk.py
++++ b/SDKs/4.3/sdk-core/pebble/.waf3-1.7.11-951087d39789950ed009f0c86ce75e7b/waflib/extras/pebble_sdk.py
+@@ -6,11 +6,11 @@ import json
+ from waflib.Configure import conf
+ from waflib.Errors import ConfigurationError
+ from waflib import Logs
+-import sdk_paths
++from . import sdk_paths
+ from generate_appinfo import generate_appinfo_c
+-from process_sdk_resources import generate_resources
+-import report_memory_usage
+-from sdk_helpers import(configure_libraries,configure_platform,find_sdk_component,get_target_platforms,truncate_to_32_bytes,validate_message_keys_object)
++from .process_sdk_resources import generate_resources
++from . import report_memory_usage
++from .sdk_helpers import(configure_libraries,configure_platform,find_sdk_component,get_target_platforms,truncate_to_32_bytes,validate_message_keys_object)
+ def _extract_project_info(conf,info_json,json_filename):
+ 	if'pebble'in info_json:
+ 		project_info=info_json['pebble']
+@@ -108,6 +108,7 @@ def configure(conf):
+ 	conf.load('process_message_keys')
+ 	base_env=conf.env
+ 	for platform in conf.env.TARGET_PLATFORMS:
++		platform = platform.decode()
+ 		conf.setenv(platform,base_env)
+ 		configure_platform(conf,platform)
+ 	conf.setenv('')
+@@ -115,6 +116,7 @@ def build(bld):
+ 	bld.load('pebble_sdk_common')
+ 	cached_env=bld.env
+ 	for platform in bld.env.TARGET_PLATFORMS:
++		platform = platform.decode()
+ 		bld.env=bld.all_envs[platform]
+ 		if bld.env.USE_GROUPS:
+ 			bld.set_group(bld.env.PLATFORM_NAME)
+diff --git a/SDKs/4.3/sdk-core/pebble/.waf3-1.7.11-951087d39789950ed009f0c86ce75e7b/waflib/extras/pebble_sdk_common.py b/SDKs/4.3/sdk-core/pebble/.waf3-1.7.11-951087d39789950ed009f0c86ce75e7b/waflib/extras/pebble_sdk_common.py
+index 59dfe14..bdfc396 100644
+--- a/SDKs/4.3/sdk-core/pebble/.waf3-1.7.11-951087d39789950ed009f0c86ce75e7b/waflib/extras/pebble_sdk_common.py
++++ b/SDKs/4.3/sdk-core/pebble/.waf3-1.7.11-951087d39789950ed009f0c86ce75e7b/waflib/extras/pebble_sdk_common.py
+@@ -10,9 +10,9 @@ from waflib.Configure import conf
+ from waflib.Task import Task
+ from waflib.TaskGen import after_method,before_method,feature
+ from waflib.Tools import c,c_preproc
+-import ldscript,process_bundle,process_headers,process_js,report_memory_usage,xcode_pebble
++from . import ldscript,process_bundle,process_headers,process_js,report_memory_usage,xcode_pebble
+ from pebble_sdk_platform import maybe_import_internal
+-from sdk_helpers import(append_to_attr,find_sdk_component,get_node_from_abspath,wrap_task_name_with_platform)
++from .sdk_helpers import(append_to_attr,find_sdk_component,get_node_from_abspath,wrap_task_name_with_platform)
+ Task.__str__=wrap_task_name_with_platform
+ def options(opt):
+ 	opt.load('gcc')
+@@ -53,6 +53,7 @@ def build(bld):
+ 	bld(features='message_keys')
+ 	cached_env=bld.env
+ 	for platform in bld.env.TARGET_PLATFORMS:
++		platform = platform.decode()  # HACK
+ 		bld.env=bld.all_envs[platform]
+ 		if bld.env.USE_GROUPS:
+ 			bld.add_group(bld.env.PLATFORM_NAME)
+@@ -84,7 +85,7 @@ def setup_pebble_c(task_gen):
+ def fix_pebble_h_dependencies(task_gen):
+ 	for task in task_gen.tasks:
+ 		if type(task)==c.c:
+-			task.scan=types.MethodType(_wrap_c_preproc_scan,task,c.c)
++			task.scan=types.MethodType(_wrap_c_preproc_scan,task)
+ @feature('pebble_cprogram')
+ @before_method('process_source')
+ def setup_pebble_cprogram(task_gen):
+diff --git a/SDKs/4.3/sdk-core/pebble/.waf3-1.7.11-951087d39789950ed009f0c86ce75e7b/waflib/extras/pebble_sdk_lib.py b/SDKs/4.3/sdk-core/pebble/.waf3-1.7.11-951087d39789950ed009f0c86ce75e7b/waflib/extras/pebble_sdk_lib.py
+index 1ceb4ae..70e779a 100644
+--- a/SDKs/4.3/sdk-core/pebble/.waf3-1.7.11-951087d39789950ed009f0c86ce75e7b/waflib/extras/pebble_sdk_lib.py
++++ b/SDKs/4.3/sdk-core/pebble/.waf3-1.7.11-951087d39789950ed009f0c86ce75e7b/waflib/extras/pebble_sdk_lib.py
+@@ -5,7 +5,7 @@
+ import json
+ import sdk_paths
+ from process_sdk_resources import generate_resources
+-from sdk_helpers import(configure_libraries,configure_platform,get_target_platforms,validate_message_keys_object)
++from .sdk_helpers import(configure_libraries,configure_platform,get_target_platforms,validate_message_keys_object)
+ def options(opt):
+ 	opt.load('pebble_sdk_common')
+ 	opt.add_option('-t','--timestamp',dest='timestamp',help="Use a specific timestamp to label this package (ie, your repository's last commit time), ""defaults to time of build")
+diff --git a/SDKs/4.3/sdk-core/pebble/.waf3-1.7.11-951087d39789950ed009f0c86ce75e7b/waflib/extras/process_bundle.py b/SDKs/4.3/sdk-core/pebble/.waf3-1.7.11-951087d39789950ed009f0c86ce75e7b/waflib/extras/process_bundle.py
+index 57fd6a5..86f308d 100644
+--- a/SDKs/4.3/sdk-core/pebble/.waf3-1.7.11-951087d39789950ed009f0c86ce75e7b/waflib/extras/process_bundle.py
++++ b/SDKs/4.3/sdk-core/pebble/.waf3-1.7.11-951087d39789950ed009f0c86ce75e7b/waflib/extras/process_bundle.py
+@@ -7,7 +7,7 @@ from waflib import Task
+ from waflib.TaskGen import feature
+ import mkbundle
+ from pebble_package import LibraryPackage
+-from process_elf import generate_bin_file
++from .process_elf import generate_bin_file
+ from resources.types.resource_ball import ResourceBall
+ @Task.update_outputs
+ class lib_package(Task.Task):
+diff --git a/SDKs/4.3/sdk-core/pebble/.waf3-1.7.11-951087d39789950ed009f0c86ce75e7b/waflib/extras/process_elf.py b/SDKs/4.3/sdk-core/pebble/.waf3-1.7.11-951087d39789950ed009f0c86ce75e7b/waflib/extras/process_elf.py
+index 8ea5438..a0322be 100644
+--- a/SDKs/4.3/sdk-core/pebble/.waf3-1.7.11-951087d39789950ed009f0c86ce75e7b/waflib/extras/process_elf.py
++++ b/SDKs/4.3/sdk-core/pebble/.waf3-1.7.11-951087d39789950ed009f0c86ce75e7b/waflib/extras/process_elf.py
+@@ -2,8 +2,8 @@
+ # encoding: utf-8
+ # WARNING! Do not edit! http://waf.googlecode.com/git/docs/wafbook/single.html#_obtaining_the_waf_file
+
+-import objcopy
+-import pebble_sdk_gcc
++from . import objcopy
++from . import pebble_sdk_gcc
+ def generate_bin_file(task_gen,bin_type,elf_file,has_pkjs,has_worker):
+ 	platform_build_node=task_gen.bld.path.get_bld().find_node(task_gen.bld.env.BUILD_DIR)
+ 	packaged_files=[elf_file]
+diff --git a/SDKs/4.3/sdk-core/pebble/.waf3-1.7.11-951087d39789950ed009f0c86ce75e7b/waflib/extras/process_headers.py b/SDKs/4.3/sdk-core/pebble/.waf3-1.7.11-951087d39789950ed009f0c86ce75e7b/waflib/extras/process_headers.py
+index bf45317..e9b26a6 100644
+--- a/SDKs/4.3/sdk-core/pebble/.waf3-1.7.11-951087d39789950ed009f0c86ce75e7b/waflib/extras/process_headers.py
++++ b/SDKs/4.3/sdk-core/pebble/.waf3-1.7.11-951087d39789950ed009f0c86ce75e7b/waflib/extras/process_headers.py
+@@ -4,7 +4,7 @@
+
+ from waflib.TaskGen import before_method,feature
+ from waflib import Context,Task
+-from sdk_helpers import get_node_from_abspath
++from .sdk_helpers import get_node_from_abspath
+ @feature('headers')
+ @before_method('make_lib_bundle')
+ def process_headers(task_gen):
+diff --git a/SDKs/4.3/sdk-core/pebble/.waf3-1.7.11-951087d39789950ed009f0c86ce75e7b/waflib/extras/process_js.py b/SDKs/4.3/sdk-core/pebble/.waf3-1.7.11-951087d39789950ed009f0c86ce75e7b/waflib/extras/process_js.py
+index 6c1fd53..1d5c694 100644
+--- a/SDKs/4.3/sdk-core/pebble/.waf3-1.7.11-951087d39789950ed009f0c86ce75e7b/waflib/extras/process_js.py
++++ b/SDKs/4.3/sdk-core/pebble/.waf3-1.7.11-951087d39789950ed009f0c86ce75e7b/waflib/extras/process_js.py
+@@ -9,8 +9,8 @@ from string import Template
+ from waflib.Errors import WafError
+ from waflib.TaskGen import before_method,feature
+ from waflib import Context,Logs,Node,Task
+-from sdk_helpers import find_sdk_component,get_node_from_abspath
+-from sdk_helpers import process_package
++from .sdk_helpers import find_sdk_component,get_node_from_abspath
++from .sdk_helpers import process_package
+ @feature('rockyjs')
+ @before_method('process_sdk_resources')
+ def process_rocky_js(task_gen):
+diff --git a/SDKs/4.3/sdk-core/pebble/.waf3-1.7.11-951087d39789950ed009f0c86ce75e7b/waflib/extras/process_message_keys.py b/SDKs/4.3/sdk-core/pebble/.waf3-1.7.11-951087d39789950ed009f0c86ce75e7b/waflib/extras/process_message_keys.py
+index bda8822..4efd37b 100644
+--- a/SDKs/4.3/sdk-core/pebble/.waf3-1.7.11-951087d39789950ed009f0c86ce75e7b/waflib/extras/process_message_keys.py
++++ b/SDKs/4.3/sdk-core/pebble/.waf3-1.7.11-951087d39789950ed009f0c86ce75e7b/waflib/extras/process_message_keys.py
+@@ -6,7 +6,7 @@ import json
+ from re import findall
+ from waflib.TaskGen import before_method,feature
+ from waflib import Logs,Task
+-from sdk_helpers import get_node_from_abspath
++from .sdk_helpers import get_node_from_abspath
+ header=("""#pragma once
+ #include <stdint.h>
+
+@@ -47,7 +47,7 @@ def configure(conf):
+ 			key_dict=keys
+ 		else:
+ 			conf.fatal("You have specified an invalid messageKeys object in your project JSON ""file.")
+-	combined_key_list=key_list+key_dict.keys()
++	combined_key_list=key_list+list(key_dict.keys())
+ 	for lib in conf.env.LIB_JSON:
+ 		if not'pebble'in lib or not'messageKeys'in lib['pebble']:
+ 			continue
+diff --git a/SDKs/4.3/sdk-core/pebble/.waf3-1.7.11-951087d39789950ed009f0c86ce75e7b/waflib/extras/process_sdk_resources.py b/SDKs/4.3/sdk-core/pebble/.waf3-1.7.11-951087d39789950ed009f0c86ce75e7b/waflib/extras/process_sdk_resources.py
+index dc60ce7..06f10e0 100644
+--- a/SDKs/4.3/sdk-core/pebble/.waf3-1.7.11-951087d39789950ed009f0c86ce75e7b/waflib/extras/process_sdk_resources.py
++++ b/SDKs/4.3/sdk-core/pebble/.waf3-1.7.11-951087d39789950ed009f0c86ce75e7b/waflib/extras/process_sdk_resources.py
+@@ -14,7 +14,7 @@ import resources.resource_map.resource_generator_js
+ import resources.resource_map.resource_generator_pbi
+ import resources.resource_map.resource_generator_png
+ import resources.resource_map.resource_generator_raw
+-from sdk_helpers import is_sdk_2x,validate_resource_not_larger_than
++from .sdk_helpers import is_sdk_2x,validate_resource_not_larger_than
+ def _preprocess_resource_ids(bld,resources_list,has_published_media=False):
+ 	resource_id_mapping={}
+ 	next_id=1
+diff --git a/SDKs/4.3/sdk-core/pebble/.waf3-1.7.11-951087d39789950ed009f0c86ce75e7b/waflib/extras/process_timeline_resources.py b/SDKs/4.3/sdk-core/pebble/.waf3-1.7.11-951087d39789950ed009f0c86ce75e7b/waflib/extras/process_timeline_resources.py
+index 7cd7655..1a6285b 100644
+--- a/SDKs/4.3/sdk-core/pebble/.waf3-1.7.11-951087d39789950ed009f0c86ce75e7b/waflib/extras/process_timeline_resources.py
++++ b/SDKs/4.3/sdk-core/pebble/.waf3-1.7.11-951087d39789950ed009f0c86ce75e7b/waflib/extras/process_timeline_resources.py
+@@ -8,7 +8,7 @@ from waflib import Node,Task,TaskGen
+ from waflib.TaskGen import before_method,feature
+ from resources.types.resource_definition import ResourceDefinition
+ from resources.types.resource_object import ResourceObject
+-from sdk_helpers import validate_resource_not_larger_than
++from .sdk_helpers import validate_resource_not_larger_than
+ class layouts_json(Task.Task):
+ 	def run(self):
+ 		published_media_dict={m['id']:m['name']for m in self.published_media}
+diff --git a/SDKs/4.3/sdk-core/pebble/.waf3-1.7.11-951087d39789950ed009f0c86ce75e7b/waflib/extras/report_memory_usage.py b/SDKs/4.3/sdk-core/pebble/.waf3-1.7.11-951087d39789950ed009f0c86ce75e7b/waflib/extras/report_memory_usage.py
+index dff0442..fb90103 100644
+--- a/SDKs/4.3/sdk-core/pebble/.waf3-1.7.11-951087d39789950ed009f0c86ce75e7b/waflib/extras/report_memory_usage.py
++++ b/SDKs/4.3/sdk-core/pebble/.waf3-1.7.11-951087d39789950ed009f0c86ce75e7b/waflib/extras/report_memory_usage.py
+@@ -7,7 +7,7 @@ from waflib import Logs,Task
+ from waflib.TaskGen import after_method,feature
+ from binutils import size
+ from memory_reports import(app_memory_report,app_resource_memory_error,app_appstore_resource_memory_error,bytecode_memory_report,simple_memory_report)
+-from sdk_helpers import is_sdk_2x
++from .sdk_helpers import is_sdk_2x
+ class memory_usage_report(Task.Task):
+ 	def run(self):
+ 		bin_type=self.bin_type
+diff --git a/SDKs/4.3/sdk-core/pebble/.waf3-1.7.11-951087d39789950ed009f0c86ce75e7b/waflib/extras/sdk_helpers.py b/SDKs/4.3/sdk-core/pebble/.waf3-1.7.11-951087d39789950ed009f0c86ce75e7b/waflib/extras/sdk_helpers.py
+index d49a40b..36245fe 100644
+--- a/SDKs/4.3/sdk-core/pebble/.waf3-1.7.11-951087d39789950ed009f0c86ce75e7b/waflib/extras/sdk_helpers.py
++++ b/SDKs/4.3/sdk-core/pebble/.waf3-1.7.11-951087d39789950ed009f0c86ce75e7b/waflib/extras/sdk_helpers.py
+@@ -9,7 +9,7 @@ import re
+ from waflib import Logs
+ from pebble_package import LibraryPackage
+ from pebble_sdk_platform import pebble_platforms,maybe_import_internal
+-from pebble_sdk_version import set_env_sdk_version
++from .pebble_sdk_version import set_env_sdk_version
+ from resources.types.resource_object import ResourceObject
+ def _get_pbi_size(data):
+ 	width=struct.unpack('<h',data[8:10])[0]
+diff --git a/SDKs/4.3/sdk-core/pebble/.waf3-1.7.11-951087d39789950ed009f0c86ce75e7b/waflib/extras/xcode_pebble.py b/SDKs/4.3/sdk-core/pebble/.waf3-1.7.11-951087d39789950ed009f0c86ce75e7b/waflib/extras/xcode_pebble.py
+index 4fac4c8..b2399b8 100644
+--- a/SDKs/4.3/sdk-core/pebble/.waf3-1.7.11-951087d39789950ed009f0c86ce75e7b/waflib/extras/xcode_pebble.py
++++ b/SDKs/4.3/sdk-core/pebble/.waf3-1.7.11-951087d39789950ed009f0c86ce75e7b/waflib/extras/xcode_pebble.py
+@@ -298,5 +298,5 @@ else\n\
+     pypy waf $ACTION\n\
+ fi\n\
+ ")
+-		os.chmod(xcscript_path,0755)
++		os.chmod(xcscript_path, 0o755)
+ 		f.close()
+diff --git a/SDKs/4.3/sdk-core/pebble/common/tools/binutils.py b/SDKs/4.3/sdk-core/pebble/common/tools/binutils.py
+index 5543bba..5f0ef8d 100644
+--- a/SDKs/4.3/sdk-core/pebble/common/tools/binutils.py
++++ b/SDKs/4.3/sdk-core/pebble/common/tools/binutils.py
+@@ -43,14 +43,14 @@ class FileInfo(object):
+         return result
+
+     def pprint(self, verbose):
+-        print '  %s: size %u' % (self.filename, self.size)
++        print('  %s: size %u' % (self.filename, self.size))
+         if verbose:
+             l = sorted(self.symbols.itervalues(), key=lambda x: -x.size)
+             for s in l:
+-                print '    %6u %-36s' % (s.size, s.name)
++                print('    %6u %-36s' % (s.size, s.name))
+
+     def __str__(self):
+-        return '<FileInfo %s: %u>' % (self.filename, self.size)
++        return('<FileInfo %s: %u>' % (self.filename, self.size))
+
+
+ class SectionInfo(object):
+@@ -81,7 +81,7 @@ class SectionInfo(object):
+         return self.files.values()
+
+     def pprint(self, summary, verbose):
+-        print '%s: count %u size %u' % (self.name, self.count, self.size)
++        print('%s: count %u size %u' % (self.name, self.count, self.size))
+
+         if not summary:
+             l = self.files.values()
+@@ -197,9 +197,9 @@ def _get_symbols_table(f):
+
+ # This method is quite slow, but works around a bug in nm.
+ def _nm_generator_slow(f):
+-    print "Getting list of symbols..."
++    print("Getting list of symbols...")
+     symbols = _get_symbols_table(f)
+-    print "Aggregating..."
++    print("Aggregating...")
+     infile = sh.arm_none_eabi_nm('-S', f)
+
+     line_pattern = re.compile(r"""([0-9a-f]+)\s+ # address
+@@ -274,7 +274,7 @@ def size(elf_path):
+     lines = output.splitlines()
+     if len(lines) < 2:
+         return 0
+-    match = re.match("^\s*([0-9]+)\s+([0-9]+)\s+([0-9]+)", lines[1])
++    match = re.match(b"^\s*([0-9]+)\s+([0-9]+)\s+([0-9]+)", lines[1])
+     if not match:
+         return 0
+     # text, data, bss
+diff --git a/SDKs/4.3/sdk-core/pebble/common/tools/bitmapgen.py b/SDKs/4.3/sdk-core/pebble/common/tools/bitmapgen.py
+index 56b0d51..b2a7418 100644
+--- a/SDKs/4.3/sdk-core/pebble/common/tools/bitmapgen.py
++++ b/SDKs/4.3/sdk-core/pebble/common/tools/bitmapgen.py
+@@ -1,6 +1,6 @@
+ #!/usr/bin/env python
+
+-import StringIO
++from io import StringIO
+ import argparse
+ import os
+ import struct
+@@ -333,7 +333,7 @@ def cmd_pbi(args):
+ def cmd_header(args):
+     pb = PebbleBitmap(args.input_png, bitmap_format=args.format,
+                       color_reduction_method=args.color_reduction_method, crop=not args.disable_crop)
+-    print pb.header()
++    print(pb.header())
+
+
+ def cmd_white_trans_pbi(args):
+diff --git a/SDKs/4.3/sdk-core/pebble/common/tools/font/fontgen.py b/SDKs/4.3/sdk-core/pebble/common/tools/font/fontgen.py
+index 142d3af..5210898 100755
+--- a/SDKs/4.3/sdk-core/pebble/common/tools/font/fontgen.py
++++ b/SDKs/4.3/sdk-core/pebble/common/tools/font/fontgen.py
+@@ -152,8 +152,8 @@ class Font:
+     def set_regex_filter(self, regex_string):
+         if regex_string != ".*":
+             try:
+-                self.regex = re.compile(unicode(regex_string, 'utf8'), re.UNICODE)
+-            except Exception, e:
++                self.regex = re.compile(str(regex_string, 'utf8'), re.UNICODE)
++            except Exception as e:
+                 raise Exception("Supplied filter argument was not a valid regular expression."
+                                 "Font: {}".format(self.ttf_path))
+         else:
+@@ -374,7 +374,7 @@ class Font:
+                         struct.pack(offset_table_format, codepoint, offset))
+                 bucket_sizes[glyph_hash] = bucket_sizes[glyph_hash] + 1
+                 if bucket_sizes[glyph_hash] > OFFSET_TABLE_MAX_SIZE:
+-                    print "error: %d > 127" % bucket_sizes[glyph_hash]
++                    print("error: %d > 127" % bucket_sizes[glyph_hash])
+             return bucket_sizes
+
+         def add_glyph(codepoint, next_offset, gindex, glyph_indices_lookup):
+@@ -425,7 +425,7 @@ class Font:
+                 raise Exception('Wildcard codepoint is used for something else in this font.'
+                                 'Font {}'.format(self.ttf_path))
+
+-            if (gindex is 0):
++            if (gindex == 0):
+                 raise Exception('0 index is reused by a non wildcard glyph. Font {}'.
+                                 format(self.ttf_path))
+
+diff --git a/SDKs/4.3/sdk-core/pebble/common/tools/generate_appinfo.py b/SDKs/4.3/sdk-core/pebble/common/tools/generate_appinfo.py
+index 4884bd3..1c065e2 100644
+--- a/SDKs/4.3/sdk-core/pebble/common/tools/generate_appinfo.py
++++ b/SDKs/4.3/sdk-core/pebble/common/tools/generate_appinfo.py
+@@ -24,7 +24,7 @@ def generate_appinfo_c(app_info, output_filename, platform_name=None):
+         app_uuid = uuid.UUID(app_info['uuid'])
+     except KeyError:
+         raise Exception('Could not find $.uuid in appinfo.json')
+-    uuid_initializer_string = '{ %s }' % ", ".join(["0x%02X" % ord(b) for b in app_uuid.bytes])
++    uuid_initializer_string = '{ %s }' % ", ".join(["0x%02X" % b for b in app_uuid.bytes])
+
+     try:
+         name = app_info['shortName']
+@@ -124,7 +124,7 @@ def generate_appinfo_c(app_info, output_filename, platform_name=None):
+             company=company_name,
+             icon_resource_id=icon_resource_id,
+             flags=flags_string,
+-            uuid=uuid_initializer_string).encode('utf-8'))
++            uuid=uuid_initializer_string))
+
+ PEBBLE_APP_INFO_TEMPLATE = string.Template("""
+ const PebbleProcessInfo __pbl_app_info __attribute__ ((section (".pbl_header"))) = {
+diff --git a/SDKs/4.3/sdk-core/pebble/common/tools/inject_metadata.py b/SDKs/4.3/sdk-core/pebble/common/tools/inject_metadata.py
+index 132a3d5..8d00760 100755
+--- a/SDKs/4.3/sdk-core/pebble/common/tools/inject_metadata.py
++++ b/SDKs/4.3/sdk-core/pebble/common/tools/inject_metadata.py
+@@ -100,7 +100,7 @@ def inject_metadata(target_binary, target_elf, resources_file, timestamp, allow_
+         # We don't care about the lines that only have two columns, they're not functions.
+
+         for sym in nm_output:
+-            if symbol == sym[-1] and len(sym) == 3:
++            if symbol == sym[-1].decode() and len(sym) == 3:
+                 return int(sym[0], 16)
+
+         raise Exception("Could not locate symbol <%s> in binary! Failed to inject app metadata" %
+@@ -139,11 +139,11 @@ def inject_metadata(target_binary, target_elf, resources_file, timestamp, allow_
+             if len(columns) < 6:
+                 continue
+
+-            if columns[0] == '.bss':
++            if columns[0] == b'.bss':
+                 addr = int(columns[2], 16)
+                 size = int(columns[4], 16)
+                 last_section_end_addr = addr + size
+-            elif columns[0] == '.data' and last_section_end_addr == 0:
++            elif columns[0] == b'.data' and last_section_end_addr == 0:
+                 addr = int(columns[2], 16)
+                 size = int(columns[4], 16)
+                 last_section_end_addr = addr + size
+@@ -170,7 +170,7 @@ def inject_metadata(target_binary, target_elf, resources_file, timestamp, allow_
+         while i < len(lines):
+             if not reading_section:
+                 # look for the next section
+-                if lines[i].startswith("Relocation section '.rel.data"):
++                if lines[i].startswith(b"Relocation section '.rel.data"):
+                     reading_section = True
+                     i += 1 # skip the column title section
+             else:
+@@ -189,11 +189,11 @@ def inject_metadata(target_binary, target_elf, resources_file, timestamp, allow_
+         for line in lines:
+             # We shouldn't need to do anything with the Procedure Linkage Table since we don't
+             # actually export functions
+-            if '.got' in line and '.got.plt' not in line:
+-                words = line.split(' ')
+-                while '' in words:
+-                    words.remove('')
+-                section_label_idx = words.index('.got')
++            if b'.got' in line and b'.got.plt' not in line:
++                words = line.split(b' ')
++                while b'' in words:
++                    words.remove(b'')
++                section_label_idx = words.index(b'.got')
+                 addr = int(words[section_label_idx + 2], 16)
+                 length = int(words[section_label_idx + 4], 16)
+                 for i in range(addr, addr + length, 4):
+diff --git a/SDKs/4.3/sdk-core/pebble/common/tools/pbpack.py b/SDKs/4.3/sdk-core/pebble/common/tools/pbpack.py
+index 67389ac..d6787c9 100755
+--- a/SDKs/4.3/sdk-core/pebble/common/tools/pbpack.py
++++ b/SDKs/4.3/sdk-core/pebble/common/tools/pbpack.py
+@@ -65,12 +65,12 @@ class ResourcePack(object):
+     def serialize_table(self):
+         # Serialize these entries into table_data
+         cur_file_id = 1
+-        table_data = ''
++        table_data = b''
+         for cur_file_id, table_entry in enumerate(self.table_entries, start=1):
+             table_data += table_entry.serialize(cur_file_id)
+
+         # Pad the rest of the table_data up to table_size
+-        for i in xrange(cur_file_id, self.table_size):
++        for i in range(cur_file_id, self.table_size):
+             table_data += ResourcePackTableEntry(0, 0, 0, 0).serialize(0)
+
+         return table_data
+@@ -105,7 +105,7 @@ class ResourcePack(object):
+
+         # Parse table entries:
+         resource_pack.table_entries = []
+-        for n in xrange(num_files):
++        for n in range(num_files):
+             table_entry = f_in.read(cls.TABLE_ENTRY_SIZE_BYTES)
+             file_id, entry = ResourcePackTableEntry.deserialize(table_entry)
+
+@@ -230,11 +230,11 @@ class ResourcePack(object):
+         Dump a bunch of information about this pbpack to stdout
+         """
+
+-        print 'Manifest CRC: 0x%x' % self.crc
+-        print 'Calculated CRC: 0x%x' % self.get_content_crc()
+-        print 'Num Items: %u' % len(self.table_entries)
++        print('Manifest CRC: 0x%x' % self.crc)
++        print('Calculated CRC: 0x%x' % self.get_content_crc())
++        print('Num Items: %u' % len(self.table_entries))
+         for i, entry in enumerate(self.table_entries, start=1):
+-            print '  %u: Offset %u Length %u CRC 0x%x' % (i, entry.offset, entry.length, entry.crc)
++            print('  %u: Offset %u Length %u CRC 0x%x' % (i, entry.offset, entry.length, entry.crc))
+
+     def __init__(self, is_system):
+         self.table_size = 512 if is_system else 256
+diff --git a/SDKs/4.3/sdk-core/pebble/common/tools/png2pblpng.py b/SDKs/4.3/sdk-core/pebble/common/tools/png2pblpng.py
+index d30427f..5a009fa 100644
+--- a/SDKs/4.3/sdk-core/pebble/common/tools/png2pblpng.py
++++ b/SDKs/4.3/sdk-core/pebble/common/tools/png2pblpng.py
+@@ -2,7 +2,7 @@
+
+ import png
+ import itertools
+-import StringIO
++from io import StringIO
+
+ import pebble_image_routines
+
+diff --git a/SDKs/4.3/sdk-core/pebble/common/tools/stm32_crc.py b/SDKs/4.3/sdk-core/pebble/common/tools/stm32_crc.py
+index 581b23b..3081d12 100644
+--- a/SDKs/4.3/sdk-core/pebble/common/tools/stm32_crc.py
++++ b/SDKs/4.3/sdk-core/pebble/common/tools/stm32_crc.py
+@@ -2,9 +2,9 @@ CRC_POLY = 0x04C11DB7
+
+ def precompute_table(bits):
+     lookup_table = []
+-    for i in xrange(2**bits):
++    for i in range(2**bits):
+         rr = i << (32 - bits)
+-        for x in xrange(bits):
++        for x in range(bits):
+             if rr & 0x80000000:
+                 rr = (rr << 1) ^ CRC_POLY
+             else:
+@@ -17,10 +17,10 @@ lookup_table = precompute_table(8)
+ def process_word(data, crc=0xffffffff):
+     if (len(data) < 4):
+         # The CRC data is "padded" in a very unique and confusing fashion.
+-        data = data[::-1] + '\0' * (4 - len(data))
++        data = data[::-1] + b'\0' * (4 - len(data))
+
+     for char in reversed(data):
+-        b = ord(char)
++        b = char
+         crc = ((crc << 8) ^ lookup_table[(crc >> 24) ^ b]) & 0xffffffff
+     return crc
+
+@@ -28,7 +28,7 @@ def process_buffer(buf, c=0xffffffff):
+     word_count = (len(buf) + 3) / 4
+
+     crc = c
+-    for i in xrange(word_count):
++    for i in range(int(word_count)):
+         crc = process_word(buf[i * 4 : (i + 1) * 4], crc)
+     return crc
+
+@@ -43,7 +43,7 @@ if __name__ == '__main__':
+     assert(0x519b130 == process_buffer("\xfe\xff\xfe\xff"))
+     assert(0x495e02ca == process_buffer("\xfe\xff\xfe\xff\x88"))
+
+-    print "All tests passed!"
++    print("All tests passed!")
+
+     # arg1 == path to file to crc
+     # arg2 == only crc first N bytes of file specified in arg 1
+@@ -53,4 +53,4 @@ if __name__ == '__main__':
+         else:
+             b = open(sys.argv[1]).read()
+         crc = crc32(b)
+-        print "%u or 0x%x" % (crc, crc)
++        print("%u or 0x%x" % (crc, crc))
+diff --git a/SDKs/4.3/sdk-core/pebble/common/waftools/resources/types/resource_ball.py b/SDKs/4.3/sdk-core/pebble/common/waftools/resources/types/resource_ball.py
+index 57b1e61..d2fa87a 100644
+--- a/SDKs/4.3/sdk-core/pebble/common/waftools/resources/types/resource_ball.py
++++ b/SDKs/4.3/sdk-core/pebble/common/waftools/resources/types/resource_ball.py
+@@ -38,4 +38,4 @@ if __name__ == '__main__':
+     rb = ResourceBall.load(args.resball)
+
+     for i, o in enumerate(rb.resource_objects, start=1):
+-        print "%4u: %-50s %-10s %6u" % (i, o.definition.name, o.definition.type, len(o.data))
++        print("%4u: %-50s %-10s %6u" % (i, o.definition.name, o.definition.type, len(o.data)))

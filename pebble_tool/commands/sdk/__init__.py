@@ -39,12 +39,12 @@ class SDKCommand(BaseCommand):
 
         if version != 2:
             try:
-                python2_version = int(subprocess.check_output(["python2", "-c",
+                python2_version = int(subprocess.check_output(["python", "-c",
                                                                 "import sys; print(sys.version_info[1])"]).strip())
             except (subprocess.CalledProcessError, ValueError):
-                raise ToolError("Can't find a python2 interpreter.")
+                raise ToolError("Can't find a python interpreter.")
             if python2_version < 6:
-                raise ToolError("Require python 2.6 or 2.7 to run the build tools; got 2.{}".format(python2_version))
+                raise ToolError("Require python 3 to run the build tools; got {}".format(python2_version))
             # We have a viable python2. Use our hack to stick 'python' into the path.
             os.environ['PATH'] = '{}:{}'.format(os.path.normpath(os.path.dirname(__file__)), os.environ['PATH'])
 

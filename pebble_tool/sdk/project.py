@@ -71,7 +71,7 @@ class PebbleProject(object):
 
 class AppinfoProject(PebbleProject):
     def __new__(cls, *args, **kwargs):
-        return object.__new__(cls, *args, **kwargs)
+        return super(PebbleProject, cls).__new__(cls)
 
     @staticmethod
     def check_project_directory(project_dir):

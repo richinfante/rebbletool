@@ -1,0 +1,44 @@
+#!/bin/bash
+
+if command -v python >/dev/null 2>&1; then
+	PYTHON_BIN=python
+else
+    # no python, try python3
+	if command -v python3 >/dev/null 2>&1; then
+		PYTHON_BIN=python3
+	else
+		echo "Python is required to run rebbletool/the Pebble SDK."
+		exit 1
+	fi
+fi
+
+realpath() {
+	"$PYTHON_BIN" -c "import os,sys;print(os.path.realpath(sys.argv[1]))" "$1"
+}
+
+SCRIPT=`realpath $0`
+BIN_PATH=`dirname $SCRIPT`
+PEBBLE_PATH=`realpath $BIN_PATH/../`
+
+export PEBBLE_TOOLCHAIN_PATH="$PEBBLE_PATH/arm-cs-tools/bin"
+export PATH="$BIN_PATH:$PATH"
+export PYTHONHOME="$PEBBLE_PATH/.env/"
+if [ ! -e "$PYTHONHOME" ]; then
+	echo 'You must set up a virtualenv before you can use the pebble tool.'
+	echo "Try these commands from $PEBBLE_PATH:"
+	echo
+	echo 'virtualenv --no-site-packages .env'
+	echo 'source .env/bin/activate'
+	echo 'pip install -r requirements.txt'
+	echo 'deactivate'
+	echo
+	echo "If you don't have 'virtualenv', try \`sudo pip install virtualenv\`.'"
+	echo "If you don't have 'pip', try \`sudo easy_install pip\`."
+	echo "If you still need help, contact devsupport@getpebble.com."
+	exit 1
+fi
+
+export PHONESIM_PATH="$PYTHONHOME/bin/pypkjs"
+
+source "$PEBBLE_PATH/.env/bin/activate"
+python "$PEBBLE_PATH/pebble.py" "$@"
