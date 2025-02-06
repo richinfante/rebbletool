@@ -101,6 +101,7 @@ class SDKManager(object):
     def _install_from_handle(self, f):
         path = None
         try:
+            root_install_dir = os.path.abspath(os.path.join(self.sdk_dir, "../../"))
             print("Extracting...")
             with tarfile.open(fileobj=f, mode="r:*") as t:
                 with closing(t.extractfile('sdk-core/manifest.json')) as f_manifest:
@@ -131,7 +132,7 @@ class SDKManager(object):
 
             # HACK
             print('rebbletool: Patching requirements...')
-            f = open(os.path.abspath(os.path.join(os.path.basename(__file__), '../sdk_requirements.txt')), 'r').read()
+            f = open(os.path.abspath(os.path.join(root_install_dir, 'sdk_requirements.txt')), 'r').read()
             open(os.path.join(path, "sdk-core", "requirements.txt"), 'w').write(f)
 
             cmd = [os.path.join(virtualenv_path, "bin", "pip"), "install", "-r",
@@ -168,7 +169,6 @@ class SDKManager(object):
             fileobj = BytesIO(req.content)
 
             toolchain_download_dir = os.path.abspath(os.path.join(self.sdk_dir, "../../toolchain"))
-            root_install_dir = os.path.abspath(os.path.join(self.sdk_dir, "../../"))
             with tarfile.open(fileobj=fileobj, mode="r:*") as t2:
                 print('rebbletool: extract pebble toolchain sdk into', toolchain_download_dir)
                 t2.extractall(toolchain_download_dir)
