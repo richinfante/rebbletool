@@ -1,7 +1,10 @@
 *.pyc
+*.zip
 .idea/*
 .DS_Store
 /sdk
 /arm-cs-tools
 /bin/qemu-pebble
 /toolchain
+.lock-*
+dummy_project/build

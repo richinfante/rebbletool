@@ -1,0 +1,23 @@
+{
+  "uuid": "62e9aeb9-81fd-403d-a6c1-922c2f76c5f2",
+  "appKeys": {},
+  "capabilities": [
+      "configurable"
+  ],
+  "companyName": "Rebble Alliance",
+  "longName": "Dummy",
+  "projectType": "native",
+  "resources": {
+      "media": []
+  },
+  "sdkVersion": "3",
+  "shortName": "Dummy",
+  "targetPlatforms": [
+      "aplite",
+      "basalt"
+  ],
+  "versionLabel": "1.3",
+  "watchapp": {
+      "watchface": true
+  }
+}

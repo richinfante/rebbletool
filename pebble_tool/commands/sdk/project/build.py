@@ -52,6 +52,10 @@ class BuildCommand(SDKProjectCommand):
 
                 # check if the patch has been applied
                 if 'import os,imp,sys' in contents:
+                    if args.skip_patch_sdk:
+                        print('SDK needs patching, but skipping due to --skip-patch-sdk')
+                        exit(1)
+
                     print('Detected sdk needing patching, applying: sdk.patch')
                     wd = os.path.abspath(os.path.join(self.get_sdk_path(), '../../../'))
                     print(wd)
@@ -109,6 +113,7 @@ class BuildCommand(SDKProjectCommand):
         parser = super(BuildCommand, cls).add_parser(parser)
         parser.add_argument('--debug', action='store_true', help="Build without optimisations for easier debugging. "
                                                                  "This may cause apps to run slower or not fit at all.")
+        parser.add_argument('--skip-patch-sdk', action='store_true', help="Don't attempt to patch the SDK if it's missing the required patch")
         parser.add_argument('args', nargs=argparse.REMAINDER, help="Extra arguments to pass to waf.")
         return parser
 

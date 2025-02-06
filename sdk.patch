@@ -12,7 +12,7 @@ index f9fdcc7..72466ec 100644
  			g=m.group
  			tbl[g(2)]=eval(g(3))
 diff --git a/SDKs/4.3/sdk-core/pebble/.waf3-1.7.11-951087d39789950ed009f0c86ce75e7b/waflib/Context.py b/SDKs/4.3/sdk-core/pebble/.waf3-1.7.11-951087d39789950ed009f0c86ce75e7b/waflib/Context.py
-index ecf0d53..c43eb35 100644
+index ecf0d53..1aea1a2 100644
 --- a/SDKs/4.3/sdk-core/pebble/.waf3-1.7.11-951087d39789950ed009f0c86ce75e7b/waflib/Context.py
 +++ b/SDKs/4.3/sdk-core/pebble/.waf3-1.7.11-951087d39789950ed009f0c86ce75e7b/waflib/Context.py
 @@ -2,7 +2,7 @@
@@ -20,21 +20,19 @@ index ecf0d53..c43eb35 100644
  # WARNING! Do not edit! http://waf.googlecode.com/git/docs/wafbook/single.html#_obtaining_the_waf_file
 
 -import os,imp,sys
-+import os,sys
++import os,sys,types
  from waflib import Utils,Errors,Logs
  import waflib.Node
  HEXVERSION=0x1070b00
-@@ -28,6 +28,9 @@ STDOUT=1
+@@ -28,6 +28,7 @@ STDOUT=1
  STDERR=-1
  BOTH=0
  classes=[]
 +from waflib.Node import Node as node_class
-+# class node_class(waflib.Node.Node):
-+# 			pass
  def create_context(cmd_name,*k,**kw):
  	global classes
  	for x in classes:
-@@ -60,8 +63,6 @@ class Context(ctx):
+@@ -60,8 +61,6 @@ class Context(ctx):
  		except KeyError:
  			global run_dir
  			rd=run_dir
@@ -43,7 +41,7 @@ index ecf0d53..c43eb35 100644
  		self.node_class=node_class
  		self.node_class.__module__="waflib.Node"
  		self.node_class.__name__="Nod3"
-@@ -108,7 +109,7 @@ class Context(ctx):
+@@ -108,7 +107,7 @@ class Context(ctx):
  				cache[node]=True
  				self.pre_recurse(node)
  				try:
@@ -52,12 +50,11 @@ index ecf0d53..c43eb35 100644
  					exec(compile(function_code,node.abspath(),'exec'),self.exec_dict)
  				finally:
  					self.post_recurse(node)
-@@ -271,9 +272,10 @@ def load_module(path):
+@@ -271,9 +270,9 @@ def load_module(path):
  		return cache_modules[path]
  	except KeyError:
  		pass
 -	module=imp.new_module(WSCRIPT_FILE)
-+	import types
 +	module=types.ModuleType(WSCRIPT_FILE)
  	try:
 -		code=Utils.readf(path,m='rU')
@@ -66,7 +63,7 @@ index ecf0d53..c43eb35 100644
  		raise Errors.WafError('Could not read the file %r'%path)
  	module_dir=os.path.dirname(path)
 diff --git a/SDKs/4.3/sdk-core/pebble/.waf3-1.7.11-951087d39789950ed009f0c86ce75e7b/waflib/Node.py b/SDKs/4.3/sdk-core/pebble/.waf3-1.7.11-951087d39789950ed009f0c86ce75e7b/waflib/Node.py
-index a7693a3..b2a59b8 100644
+index a7693a3..1a250aa 100644
 --- a/SDKs/4.3/sdk-core/pebble/.waf3-1.7.11-951087d39789950ed009f0c86ce75e7b/waflib/Node.py
 +++ b/SDKs/4.3/sdk-core/pebble/.waf3-1.7.11-951087d39789950ed009f0c86ce75e7b/waflib/Node.py
 @@ -279,7 +279,7 @@ class Node(object):
@@ -78,32 +75,34 @@ index a7693a3..b2a59b8 100644
  	def ant_glob(self,*k,**kw):
  		src=kw.get('src',True)
  		dir=kw.get('dir',False)
-@@ -328,7 +328,11 @@ class Node(object):
+@@ -328,7 +328,10 @@ class Node(object):
  			if[]in nrej:
  				nacc=[]
  			return[nacc,nrej]
 -		ret=[x for x in self.ant_iter(accept=accept,pats=[to_pat(incl),to_pat(excl)],maxdepth=25,dir=dir,src=src,remove=kw.get('remove',True))]
 +		ret = []
-+		# HACK:
++		# rebble hack: gather into array
 +		for x in self.ant_iter(accept=accept,pats=[to_pat(incl),to_pat(excl)],maxdepth=25,dir=dir,src=src,remove=kw.get('remove',True)):
 +			ret.append(x)
-+		# ret=[x for x in self.ant_iter(accept=accept,pats=[to_pat(incl),to_pat(excl)],maxdepth=25,dir=dir,src=src,remove=kw.get('remove',True))]
  		if kw.get('flat',False):
  			return' '.join([x.path_from(self)for x in ret])
  		return ret
 diff --git a/SDKs/4.3/sdk-core/pebble/.waf3-1.7.11-951087d39789950ed009f0c86ce75e7b/waflib/ansiterm.py b/SDKs/4.3/sdk-core/pebble/.waf3-1.7.11-951087d39789950ed009f0c86ce75e7b/waflib/ansiterm.py
-index 0de6171..ffd55ed 100644
+index 0de6171..40c63d1 100644
 --- a/SDKs/4.3/sdk-core/pebble/.waf3-1.7.11-951087d39789950ed009f0c86ce75e7b/waflib/ansiterm.py
 +++ b/SDKs/4.3/sdk-core/pebble/.waf3-1.7.11-951087d39789950ed009f0c86ce75e7b/waflib/ansiterm.py
-@@ -27,7 +27,7 @@ else:
+@@ -26,10 +26,7 @@ except Exception:
+ else:
  	import re,threading
  	is_vista=getattr(sys,"getwindowsversion",None)and sys.getwindowsversion()[0]>=6
- 	try:
+-	try:
 -		_type=unicode
-+		_type=str
- 	except NameError:
- 		_type=str
+-	except NameError:
+-		_type=str
++	_type=str
  	to_int=lambda number,default:number and int(number)or default
+ 	wlock=threading.Lock()
+ 	STD_OUTPUT_HANDLE=-11
 diff --git a/SDKs/4.3/sdk-core/pebble/.waf3-1.7.11-951087d39789950ed009f0c86ce75e7b/waflib/extras/ldscript.py b/SDKs/4.3/sdk-core/pebble/.waf3-1.7.11-951087d39789950ed009f0c86ce75e7b/waflib/extras/ldscript.py
 index 60780d8..2d0c962 100644
 --- a/SDKs/4.3/sdk-core/pebble/.waf3-1.7.11-951087d39789950ed009f0c86ce75e7b/waflib/extras/ldscript.py
@@ -123,7 +122,7 @@ index 60780d8..2d0c962 100644
  	else:
  		ldscripts=[self.ldscript]
 diff --git a/SDKs/4.3/sdk-core/pebble/.waf3-1.7.11-951087d39789950ed009f0c86ce75e7b/waflib/extras/pebble_sdk.py b/SDKs/4.3/sdk-core/pebble/.waf3-1.7.11-951087d39789950ed009f0c86ce75e7b/waflib/extras/pebble_sdk.py
-index e94f134..e30f491 100644
+index e94f134..9221567 100644
 --- a/SDKs/4.3/sdk-core/pebble/.waf3-1.7.11-951087d39789950ed009f0c86ce75e7b/waflib/extras/pebble_sdk.py
 +++ b/SDKs/4.3/sdk-core/pebble/.waf3-1.7.11-951087d39789950ed009f0c86ce75e7b/waflib/extras/pebble_sdk.py
 @@ -6,11 +6,11 @@ import json
@@ -142,24 +141,8 @@ index e94f134..e30f491 100644
  def _extract_project_info(conf,info_json,json_filename):
  	if'pebble'in info_json:
  		project_info=info_json['pebble']
-@@ -108,6 +108,7 @@ def configure(conf):
- 	conf.load('process_message_keys')
- 	base_env=conf.env
- 	for platform in conf.env.TARGET_PLATFORMS:
-+		platform = platform.decode()
- 		conf.setenv(platform,base_env)
- 		configure_platform(conf,platform)
- 	conf.setenv('')
-@@ -115,6 +116,7 @@ def build(bld):
- 	bld.load('pebble_sdk_common')
- 	cached_env=bld.env
- 	for platform in bld.env.TARGET_PLATFORMS:
-+		platform = platform.decode()
- 		bld.env=bld.all_envs[platform]
- 		if bld.env.USE_GROUPS:
- 			bld.set_group(bld.env.PLATFORM_NAME)
 diff --git a/SDKs/4.3/sdk-core/pebble/.waf3-1.7.11-951087d39789950ed009f0c86ce75e7b/waflib/extras/pebble_sdk_common.py b/SDKs/4.3/sdk-core/pebble/.waf3-1.7.11-951087d39789950ed009f0c86ce75e7b/waflib/extras/pebble_sdk_common.py
-index 59dfe14..bdfc396 100644
+index 59dfe14..9a89424 100644
 --- a/SDKs/4.3/sdk-core/pebble/.waf3-1.7.11-951087d39789950ed009f0c86ce75e7b/waflib/extras/pebble_sdk_common.py
 +++ b/SDKs/4.3/sdk-core/pebble/.waf3-1.7.11-951087d39789950ed009f0c86ce75e7b/waflib/extras/pebble_sdk_common.py
 @@ -10,9 +10,9 @@ from waflib.Configure import conf
@@ -174,15 +157,7 @@ index 59dfe14..bdfc396 100644
  Task.__str__=wrap_task_name_with_platform
  def options(opt):
  	opt.load('gcc')
-@@ -53,6 +53,7 @@ def build(bld):
- 	bld(features='message_keys')
- 	cached_env=bld.env
- 	for platform in bld.env.TARGET_PLATFORMS:
-+		platform = platform.decode()  # HACK
- 		bld.env=bld.all_envs[platform]
- 		if bld.env.USE_GROUPS:
- 			bld.add_group(bld.env.PLATFORM_NAME)
-@@ -84,7 +85,7 @@ def setup_pebble_c(task_gen):
+@@ -84,7 +84,7 @@ def setup_pebble_c(task_gen):
  def fix_pebble_h_dependencies(task_gen):
  	for task in task_gen.tasks:
  		if type(task)==c.c:
@@ -322,7 +297,7 @@ index dff0442..fb90103 100644
  	def run(self):
  		bin_type=self.bin_type
 diff --git a/SDKs/4.3/sdk-core/pebble/.waf3-1.7.11-951087d39789950ed009f0c86ce75e7b/waflib/extras/sdk_helpers.py b/SDKs/4.3/sdk-core/pebble/.waf3-1.7.11-951087d39789950ed009f0c86ce75e7b/waflib/extras/sdk_helpers.py
-index d49a40b..36245fe 100644
+index d49a40b..b6a2e40 100644
 --- a/SDKs/4.3/sdk-core/pebble/.waf3-1.7.11-951087d39789950ed009f0c86ce75e7b/waflib/extras/sdk_helpers.py
 +++ b/SDKs/4.3/sdk-core/pebble/.waf3-1.7.11-951087d39789950ed009f0c86ce75e7b/waflib/extras/sdk_helpers.py
 @@ -9,7 +9,7 @@ import re
@@ -334,6 +309,15 @@ index d49a40b..36245fe 100644
  from resources.types.resource_object import ResourceObject
  def _get_pbi_size(data):
  	width=struct.unpack('<h',data[8:10])[0]
+@@ -91,7 +91,7 @@ def get_target_platforms(ctx):
+ 		target_platforms=list(set(supported_platforms)&set(ctx.env.REQUESTED_PLATFORMS))
+ 	if not target_platforms:
+ 		ctx.fatal("No valid targetPlatforms specified in appinfo.json. Valid options are {}".format(supported_platforms))
+-	ctx.env.TARGET_PLATFORMS=sorted([p.encode('utf-8')for p in target_platforms],reverse=True)
++	ctx.env.TARGET_PLATFORMS=sorted([p for p in target_platforms],reverse=True)
+ 	return target_platforms
+ def is_sdk_2x(major,minor):
+ 	LAST_2X_MAJOR_VERSION=5
 diff --git a/SDKs/4.3/sdk-core/pebble/.waf3-1.7.11-951087d39789950ed009f0c86ce75e7b/waflib/extras/xcode_pebble.py b/SDKs/4.3/sdk-core/pebble/.waf3-1.7.11-951087d39789950ed009f0c86ce75e7b/waflib/extras/xcode_pebble.py
 index 4fac4c8..b2399b8 100644
 --- a/SDKs/4.3/sdk-core/pebble/.waf3-1.7.11-951087d39789950ed009f0c86ce75e7b/waflib/extras/xcode_pebble.py
@@ -398,7 +382,7 @@ index 5543bba..5f0ef8d 100644
          return 0
      # text, data, bss
 diff --git a/SDKs/4.3/sdk-core/pebble/common/tools/bitmapgen.py b/SDKs/4.3/sdk-core/pebble/common/tools/bitmapgen.py
-index 56b0d51..b2a7418 100644
+index 56b0d51..25ac586 100644
 --- a/SDKs/4.3/sdk-core/pebble/common/tools/bitmapgen.py
 +++ b/SDKs/4.3/sdk-core/pebble/common/tools/bitmapgen.py
 @@ -1,6 +1,6 @@
@@ -452,7 +436,7 @@ index 142d3af..5210898 100755
                                  format(self.ttf_path))
 
 diff --git a/SDKs/4.3/sdk-core/pebble/common/tools/generate_appinfo.py b/SDKs/4.3/sdk-core/pebble/common/tools/generate_appinfo.py
-index 4884bd3..1c065e2 100644
+index 4884bd3..6c857d9 100644
 --- a/SDKs/4.3/sdk-core/pebble/common/tools/generate_appinfo.py
 +++ b/SDKs/4.3/sdk-core/pebble/common/tools/generate_appinfo.py
 @@ -24,7 +24,7 @@ def generate_appinfo_c(app_info, output_filename, platform_name=None):
@@ -474,7 +458,7 @@ index 4884bd3..1c065e2 100644
  PEBBLE_APP_INFO_TEMPLATE = string.Template("""
  const PebbleProcessInfo __pbl_app_info __attribute__ ((section (".pbl_header"))) = {
 diff --git a/SDKs/4.3/sdk-core/pebble/common/tools/inject_metadata.py b/SDKs/4.3/sdk-core/pebble/common/tools/inject_metadata.py
-index 132a3d5..8d00760 100755
+index 132a3d5..9735f74 100755
 --- a/SDKs/4.3/sdk-core/pebble/common/tools/inject_metadata.py
 +++ b/SDKs/4.3/sdk-core/pebble/common/tools/inject_metadata.py
 @@ -100,7 +100,7 @@ def inject_metadata(target_binary, target_elf, resources_file, timestamp, allow_
