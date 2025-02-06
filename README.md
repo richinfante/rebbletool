@@ -20,6 +20,7 @@ pip3 install -r requirements.txt
 echo 'export PATH=~/.rebbletool/rebbletool/bin:$PATH' >> ~/.bash_profile
 
 rebble  # should print help!
+rebble sdk install latest  # need to install this while in the folder (for now)
 ```
 
 ```bash

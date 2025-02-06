@@ -182,11 +182,11 @@ class SDKManager(object):
             if len(toolchain_items) != 1:
                 raise Exception('unknown toolchain folder structure: %s' % toolchain_items)
 
-            # move toolchain/bin to ../bin
-            bin_path = os.path.join(root_install_dir, 'bin')
-            if os.path.exists(bin_path):
-                shutil.rmtree(bin_path)
-            shutil.move(os.path.join(toolchain_download_dir, toolchain_items[0], 'bin'), os.path.join(root_install_dir, 'bin'))
+            # copy toolchain/bin/qemu-pebble to ../bin/qemu-pebble
+            qemu_pebble_path = os.path.join(root_install_dir, 'bin', 'qemu-pebble')
+            if os.path.exists(qemu_pebble_path):
+                os.remove(qemu_pebble_path)
+            shutil.copy(os.path.join(toolchain_download_dir, toolchain_items[0], 'bin', 'qemu-pebble'), qemu_pebble_path)
 
             # move toolchain/arm-cs-tools to ../arm-cs-tools
             arm_cs_tools_path = os.path.join(root_install_dir, 'arm-cs-tools')
