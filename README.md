@@ -7,7 +7,7 @@ An upgraded version of pebbletool that runs on modern python
 How to use:
 https://developer.rebble.io/developer.pebble.com/guides/tools-and-resources/pebble-tool/index.html
 
-Setup:
+## Setup
 ```bash
 mkdir ~/.rebbletool  # or any other folder, we do not care
 cd ~/.rebbletool
@@ -34,9 +34,6 @@ rebble build
 rebble install --phone <ip>
 ```
 
-```bash
-export PATH="$PWD/bin/:$PATH"
-```
 ## Working commands:
 - `sdk install latest` - NOTE: patches currently only work for the latest 4.3
 - `install --phone <ip>`
