@@ -236,6 +236,9 @@ class ManagedEmulatorTransport(WebsocketTransport):
         command.extend(platform_args[self.platform])
         print("Qemu command: %s", subprocess.list2cmdline(command))
         process = subprocess.Popen(command, env={
+            # our current environment
+            **os.environ,
+            
             # pass our dyld path to the emulator (for mac)
             'DYLD_FALLBACK_LIBRARY_PATH': dyld_dir,
 
