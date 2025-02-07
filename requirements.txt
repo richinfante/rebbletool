@@ -31,5 +31,5 @@ sh==2.2.1
 # custom-modified versions of libpebble2 and pypkjs for Rebble
 # https://github.com/richinfante/pypkjs
 # https://github.com/richinfante/libpebble2
-http://public.richinfante.com/rebble/libpebble2-0.0.29.tar.gz
+https://public.richinfante.com/rebble/libpebble2-0.0.29.tar.gz
 https://public.richinfante.com/rebble/pypkjs-1.1.4.tar.gz
