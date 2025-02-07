@@ -2,6 +2,8 @@
 
 An upgraded version of pebbletool that runs on modern python
 
+**Very Experimental, Use At Your Own Risk!!!**
+
 How to use:
 https://developer.rebble.io/developer.pebble.com/guides/tools-and-resources/pebble-tool/index.html
 
