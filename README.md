@@ -34,6 +34,10 @@ rebble build
 rebble install --phone <ip>
 ```
 
+## Known Issues
+- Fonts don't render correctly
+- Emulators don't work on any platform
+
 ## Working commands:
 - `sdk install latest` - NOTE: patches currently only work for the latest 4.3
 - `install --phone <ip>`
