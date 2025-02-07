@@ -178,6 +178,14 @@ class ManagedEmulatorTransport(WebsocketTransport):
 
 
     def _spawn_qemu(self):
+        # get the root directory of the install
+        root_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), '../../'))
+
+        # find paths
+        dyld_dir = os.path.join(root_dir, 'lib')
+        bin_dir = os.path.join(root_dir, 'bin')
+
+        # find the qemu binary name
         qemu_bin = os.environ.get('PEBBLE_QEMU_PATH', 'qemu-pebble')
         qemu_micro_flash = os.path.join(sdk_manager.path_for_sdk(self.version), 'pebble', self.platform, 'qemu',
                                         "qemu_micro_flash.bin")
@@ -227,7 +235,13 @@ class ManagedEmulatorTransport(WebsocketTransport):
 
         command.extend(platform_args[self.platform])
         print("Qemu command: %s", subprocess.list2cmdline(command))
-        process = subprocess.Popen(command, stdout=self._get_output(), stderr=self._get_output())
+        process = subprocess.Popen(command, env={
+            # pass our dyld path to the emulator (for mac)
+            'DYLD_FALLBACK_LIBRARY_PATH': dyld_dir,
+
+            # pass our bin path to the emulator so it can find the qemu binaries
+            'PATH': bin_dir + ':' + os.environ.get('PATH', ''),
+        })
         time.sleep(0.2)
         if process.poll() is not None:
             try:
@@ -319,7 +333,7 @@ class ManagedEmulatorTransport(WebsocketTransport):
         if logger.getEffectiveLevel() <= logging.DEBUG:
             command.append('--debug')
         logger.info("pypkjs command: %s", subprocess.list2cmdline(command))
-        process = subprocess.Popen(command, stdout=self._get_output(), stderr=self._get_output())
+        process = subprocess.Popen(command)
         time.sleep(0.5)
         if process.poll() is not None:
             try:

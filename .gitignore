@@ -3,6 +3,7 @@
 .idea/*
 .DS_Store
 /sdk
+/lib
 /arm-cs-tools
 /bin/qemu-pebble
 /toolchain

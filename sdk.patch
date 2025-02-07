@@ -532,9 +532,27 @@ index 56b0d51..88ac32c 100644
  def process_cmd_line_args():
      parser = argparse.ArgumentParser(description="Generate pebble-usable files from png images")
 diff --git a/SDKs/4.3/sdk-core/pebble/common/tools/font/fontgen.py b/SDKs/4.3/sdk-core/pebble/common/tools/font/fontgen.py
-index 142d3af..5210898 100755
+index 142d3af..7df5fdf 100755
 --- a/SDKs/4.3/sdk-core/pebble/common/tools/font/fontgen.py
 +++ b/SDKs/4.3/sdk-core/pebble/common/tools/font/fontgen.py
+@@ -89,7 +89,7 @@ MAX_GLYPHS = 256
+ def grouper(n, iterable, fillvalue=None):
+     """grouper(3, 'ABCDEFG', 'x') --> ABC DEF Gxx"""
+     args = [iter(iterable)] * n
+-    return itertools.izip_longest(fillvalue=fillvalue, *args)
++    return itertools.zip_longest(fillvalue=fillvalue, *args)
+ 
+ def hasher(codepoint, num_glyphs):
+     return (codepoint % num_glyphs)
+@@ -109,7 +109,7 @@ class Font:
+         self.legacy = legacy
+         self.face = freetype.Face(self.ttf_path)
+         self.face.set_pixel_sizes(0, self.max_height)
+-        self.name = self.face.family_name + "_" + self.face.style_name
++        self.name = self.face.family_name.decode() + "_" + self.face.style_name.decode()
+         self.wildcard_codepoint = WILDCARD_CODEPOINT
+         self.number_of_glyphs = 0
+         self.table_size = HASH_TABLE_SIZE
 @@ -152,8 +152,8 @@ class Font:
      def set_regex_filter(self, regex_string):
          if regex_string != ".*":
@@ -546,6 +564,24 @@ index 142d3af..5210898 100755
                  raise Exception("Supplied filter argument was not a valid regular expression."
                                  "Font: {}".format(self.ttf_path))
          else:
+@@ -282,7 +282,7 @@ class Font:
+         self.face.load_glyph(gindex, flags)
+         # Font metrics
+         bitmap = self.face.glyph.bitmap
+-        advance = self.face.glyph.advance.x / 64     # Convert 26.6 fixed float format to px
++        advance = self.face.glyph.advance.x // 64     # Convert 26.6 fixed float format to px
+         advance += self.tracking_adjust
+         width = bitmap.width
+         height = bitmap.rows
+@@ -330,7 +330,7 @@ class Font:
+ 
+         glyph_header = struct.pack(self.glyph_header, width, height, left, bottom, advance)
+ 
+-        return glyph_header + ''.join(glyph_packed)
++        return glyph_header + b''.join(glyph_packed)
+ 
+     def fontinfo_bits(self):
+         if self.version == FONT_VERSION_2:
 @@ -374,7 +374,7 @@ class Font:
                          struct.pack(offset_table_format, codepoint, offset))
                  bucket_sizes[glyph_hash] = bucket_sizes[glyph_hash] + 1
@@ -555,6 +591,15 @@ index 142d3af..5210898 100755
              return bucket_sizes
  
          def add_glyph(codepoint, next_offset, gindex, glyph_indices_lookup):
+@@ -396,7 +396,7 @@ class Font:
+         def codepoint_is_in_subset(codepoint):
+            if (codepoint not in (WILDCARD_CODEPOINT, ELLIPSIS_CODEPOINT)):
+               if self.regex is not None:
+-                  if self.regex.match(unichr(codepoint)) is None:
++                  if self.regex.match(chr(codepoint)) is None:
+                       return False
+               if codepoint not in self.codepoints:
+                  return False
 @@ -425,7 +425,7 @@ class Font:
                  raise Exception('Wildcard codepoint is used for something else in this font.'
                                  'Font {}'.format(self.ttf_path))
@@ -564,6 +609,19 @@ index 142d3af..5210898 100755
                  raise Exception('0 index is reused by a non wildcard glyph. Font {}'.
                                  format(self.ttf_path))
  
+@@ -449,9 +449,9 @@ class Font:
+ 
+     def bitstring(self):
+         btstr = self.fontinfo_bits()
+-        btstr += ''.join(self.hash_table)
++        btstr += b''.join(self.hash_table)
+         for table in self.offset_tables:
+-            btstr += ''.join(table)
+-        btstr += ''.join(self.glyph_table)
++            btstr += b''.join(table)
++        btstr += b''.join(self.glyph_table)
+ 
+         return btstr
 diff --git a/SDKs/4.3/sdk-core/pebble/common/tools/generate_appinfo.py b/SDKs/4.3/sdk-core/pebble/common/tools/generate_appinfo.py
 index 4884bd3..6c857d9 100644
 --- a/SDKs/4.3/sdk-core/pebble/common/tools/generate_appinfo.py
