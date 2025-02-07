@@ -45,6 +45,7 @@ rebble install --phone <ip>
 
 ## Tested on:
 - macOS (M2)
+- Linux (x86_64)
 
 ## Development Notes
 

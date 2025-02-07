@@ -29,7 +29,7 @@ def strtobool(s):
     return s.lower() == "true" or s.lower() == 'y'
 
 MAC_SDK_PATH = 'https://developer.rebble.io/s3.amazonaws.com/assets.getpebble.com/pebble-tool/pebble-sdk-4.5-mac.tar.bz2'
-
+LINUX_64_SDK_PATH = 'https://developer.rebble.io/s3.amazonaws.com/assets.getpebble.com/pebble-tool/pebble-sdk-4.5-linux64.tar.bz2'
 class SDKManager(object):
     DOWNLOAD_SERVER = "https://sdk.rebble.io"
 
@@ -160,7 +160,7 @@ class SDKManager(object):
                 sdkpath = MAC_SDK_PATH
             elif sys.platform.startswith('linux'):
                 platform = 'linux'
-                raise NotImplementedError("Linux not supported.")
+                sdkpath = LINUX_64_SDK_PATH
             else:
                 raise SDKInstallError("Couldn't figure out what requirements to install.")
 
