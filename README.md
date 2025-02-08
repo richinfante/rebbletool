@@ -4,41 +4,10 @@ An upgraded version of `pebbletoo`l that runs on modern python (tested on 3.13)
 
 **_Very_ Experimental, Use At Your Own Risk!!!**
 
+See [Setup](#setup) for installation instructions.
+
 How to use:
 https://developer.rebble.io/developer.pebble.com/guides/tools-and-resources/pebble-tool/index.html
-
-## Setup
-```bash
-mkdir ~/.rebbletool
-cd ~/.rebbletool
-git clone https://github.com/richinfante/rebbletool.git
-cd rebbletool
-
-python3 -m venv .env
-source .env/bin/activate
-pip3 install -r requirements.txt
-
-# Recommended - add to your $PATH
-# or your equivalent for your shell (e.g. ~/.zshrc instead of ~/.bash_profile)
-# if you don't, you need to run `~/.rebbletool/rebbletool/bin/rebble` instead of `rebble`
-echo 'export PATH=~/.rebbletool/rebbletool/bin:$PATH' >> ~/.bash_profile
-source ~/.bash_profile
-
-rebble sdk install latest
-
-# cd into your project
-cd my_project
-
-# configure, patch sdk, and build
-rebble build
-
-# install on your phone
-rebble install --phone <ip>
-
-# install on emulator
-# this works on x86 mac, and x86 linux
-rebble install --emulator <i>
-```
 
 ## Tested on:
 - macOS
@@ -61,6 +30,45 @@ rebble install --emulator <i>
 - `emu-battery --percent [0-100] [--charging]`
 - `emu-tap --direction <+x|-x|+y|-y|+z|-z>
 - `emu-compass --heading <0-360>`
+
+
+## Setup
+This doesn't really care about where it's installed. I've patched the sdk path to be inside the folder alongside this tool, so it's easier to clean up and manage without `cd`'ing all the time.
+
+You also don't _need_ to add it to your path, although it's much easier to type `rebble` than some other long path to the .bin`
+
+```bash
+mkdir ~/.rebbletool
+cd ~/.rebbletool
+git clone https://github.com/richinfante/rebbletool.git
+cd rebbletool
+
+python3 -m venv .env  # .env is the _required_ name, or it won't work
+source .env/bin/activate
+pip3 install -r requirements.txt
+
+# Recommended - add to your $PATH
+# or your equivalent for your shell (e.g. ~/.zshrc instead of ~/.bash_profile)
+# if you don't, you need to run `~/.rebbletool/rebbletool/bin/rebble` instead of `rebble`
+echo 'export PATH=~/.rebbletool/rebbletool/bin:$PATH' >> ~/.bash_profile
+source ~/.bash_profile
+
+# pull the latest SDK. This will only work for the latest sdk
+rebble sdk install latest
+
+# cd into your project, or our `dummy_project` to finish setting up the sdk
+cd my_project
+
+# configure, patch sdk, and build
+rebble build
+
+# install on your phone
+rebble install --phone <ip>
+
+# install on emulator
+# this works on x86 mac, and x86 linux
+rebble install --emulator <i>
+```
 
 ## Development Notes
 
