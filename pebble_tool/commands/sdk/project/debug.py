@@ -53,7 +53,7 @@ class GdbCommand(PebbleCommand):
 
         # Figure out where we load the app into firmware memory
         for line in elf_sections.split(b'\n'):
-            if b'__{}_flash_load_start__'.format(kind) in line:
+            if b'__%s_flash_load_start__' % bytes(kind, 'utf8') in line:
                 return int(line.split()[1], 16)
         else:
             raise ToolError("Couldn't find the {} address offset.".format(kind))

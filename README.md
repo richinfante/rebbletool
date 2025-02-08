@@ -78,6 +78,8 @@ Unfortunately, gdb relies on Python2. You can, however - use any `arm-none-eabi-
 brew install arm-none-eabi-gdb
 ```
 
+I have tested gdb on both the aplite and basalt emulators so far - and it works for the most part. In some cases, you need to reset the emulator, start gdb, add your breakpoint, and reinstall the app for it to work. aplite is definitely more picky than basalt is.
+
 ## Updating SDK patches
 If you're going to help us fix issues in the SDK, this is how you do it.
 
