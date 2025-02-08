@@ -122,7 +122,7 @@ index 60780d8..2d0c962 100644
  	else:
  		ldscripts=[self.ldscript]
 diff --git a/SDKs/4.3/sdk-core/pebble/.waf3-1.7.11-951087d39789950ed009f0c86ce75e7b/waflib/extras/pebble_sdk.py b/SDKs/4.3/sdk-core/pebble/.waf3-1.7.11-951087d39789950ed009f0c86ce75e7b/waflib/extras/pebble_sdk.py
-index e94f134..9221567 100644
+index e94f134..ad21d57 100644
 --- a/SDKs/4.3/sdk-core/pebble/.waf3-1.7.11-951087d39789950ed009f0c86ce75e7b/waflib/extras/pebble_sdk.py
 +++ b/SDKs/4.3/sdk-core/pebble/.waf3-1.7.11-951087d39789950ed009f0c86ce75e7b/waflib/extras/pebble_sdk.py
 @@ -6,11 +6,11 @@ import json
@@ -141,6 +141,15 @@ index e94f134..9221567 100644
  def _extract_project_info(conf,info_json,json_filename):
  	if'pebble'in info_json:
  		project_info=info_json['pebble']
+@@ -21,7 +21,7 @@ def _extract_project_info(conf,info_json,json_filename):
+ 			conf.fatal("Project is missing a version")
+ 		version=_validate_version(conf,info_json['version'])
+ 		project_info['versionLabel']=version
+-		if isinstance(info_json['author'],basestring):
++		if isinstance(info_json['author'],str):
+ 			project_info['companyName']=(info_json['author'].split('(',1)[0].split('<',1)[0].strip())
+ 		elif isinstance(info_json['author'],dict)and'name'in info_json['author']:
+ 			project_info['companyName']=info_json['author']['name']
 diff --git a/SDKs/4.3/sdk-core/pebble/.waf3-1.7.11-951087d39789950ed009f0c86ce75e7b/waflib/extras/pebble_sdk_common.py b/SDKs/4.3/sdk-core/pebble/.waf3-1.7.11-951087d39789950ed009f0c86ce75e7b/waflib/extras/pebble_sdk_common.py
 index 59dfe14..9a89424 100644
 --- a/SDKs/4.3/sdk-core/pebble/.waf3-1.7.11-951087d39789950ed009f0c86ce75e7b/waflib/extras/pebble_sdk_common.py
