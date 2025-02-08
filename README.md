@@ -53,7 +53,7 @@ https://developer.rebble.io/developer.pebble.com/guides/tools-and-resources/pebb
 ## Setup
 This doesn't really care about where it's installed. I've patched the sdk path to be inside the folder alongside this tool, so it's easier to clean up and manage without `cd`'ing all the time.
 
-You also don't _need_ to add it to your path, although it's much easier to type `rebble` than some other long path to the .bin`
+You also don't _need_ to add it to your path, although it's much easier to type `rebble` than some other long path to the  `bin/rebble` entrypoint
 
 Prerequisites for Apple Silicon: Install Rosetta 2: `softwareupdate --install-rosetta`
 
@@ -91,7 +91,7 @@ rebble install --emulator <i>
 ```
 
 ## GDB
-Unfortunately, gdb relies on Python2. You can, however - use any `arm-none-eabi-gdb` gdb and it should work. Even better - homebrew has one you can very easily install to enable this on macOS, without going through the trouble of using a cross-compiler:
+Unfortunately, pebble-sdk version of gdb relies on Python2. You can, however - use any `arm-none-eabi-gdb` gdb and it should work. Even better - homebrew has one you can very easily install to enable this on macOS, without going through the trouble of using a cross-compiler:
 
 ```bash
 brew install arm-none-eabi-gdb
