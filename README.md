@@ -41,11 +41,17 @@ rebble install --phone <ip>
 ## Working commands:
 - `sdk install latest` - NOTE: patches currently only work for the latest 4.3
 - `install --phone <ip>`
+- `install --emulator` (out-of-box on linux, arm macs need work)
 - `build`
 - `logs`
 - `screenshot`
 - `ping`
 - `analyze-size` - runs, but returns blank data
+- `wipe`
+- `emu-time-format --format <12h/24h>`
+- `emu-battery --percent [0-100] [--charging]`
+- `emu-tap --direction <+x|-x|+y|-y|+z|-z>
+- `emu-compass --heading <0-360>`
 
 ## Tested on:
 - macOS (M2)

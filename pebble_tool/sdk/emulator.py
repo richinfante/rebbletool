@@ -235,7 +235,7 @@ class ManagedEmulatorTransport(WebsocketTransport):
 
         command.extend(platform_args[self.platform])
         print("Qemu command: %s", subprocess.list2cmdline(command))
-        process = subprocess.Popen(command, env={
+        process = subprocess.Popen(command, stdout=self._get_output(), stderr=self._get_output(), env={
             # our current environment
             **os.environ,
             
@@ -336,7 +336,7 @@ class ManagedEmulatorTransport(WebsocketTransport):
         if logger.getEffectiveLevel() <= logging.DEBUG:
             command.append('--debug')
         logger.info("pypkjs command: %s", subprocess.list2cmdline(command))
-        process = subprocess.Popen(command)
+        process = subprocess.Popen(command, stdout=self._get_output(), stderr=self._get_output())
         time.sleep(0.5)
         if process.poll() is not None:
             try:
