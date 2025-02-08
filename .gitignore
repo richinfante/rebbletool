@@ -1,5 +1,6 @@
 *.pyc
 *.zip
+*.tar.gz
 .idea/*
 .DS_Store
 /sdk

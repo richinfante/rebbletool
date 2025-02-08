@@ -6,6 +6,7 @@ from contextlib import closing
 import errno
 import json
 import os
+import platform
 from progressbar import ProgressBar, Percentage, Bar, FileTransferSpeed, Timer
 import requests
 import shutil
@@ -30,6 +31,8 @@ def strtobool(s):
 
 MAC_SDK_PATH = 'https://developer.rebble.io/s3.amazonaws.com/assets.getpebble.com/pebble-tool/pebble-sdk-4.5-mac.tar.bz2'
 LINUX_64_SDK_PATH = 'https://developer.rebble.io/s3.amazonaws.com/assets.getpebble.com/pebble-tool/pebble-sdk-4.5-linux64.tar.bz2'
+MAC_OS_DYLIB_HELPER_PATH = 'https://public.richinfante.com/rebble/macos_x86_lib_pebble_qemu.tar.gz'
+
 class SDKManager(object):
     DOWNLOAD_SERVER = "https://sdk.rebble.io"
 
@@ -110,11 +113,11 @@ class SDKManager(object):
                 if os.path.exists(path):
                     reinstall = input("SDK {} is already installed. Do you want to reinstall? (y/n) ".format(sdk_info['version']))
 
-                    if reinstall.lower() == 'n':
-                        raise SDKInstallError("SDK {} is already installed.".format(sdk_info['version']))
-                    else:
+                    if reinstall.lower() == 'y':
                         print('Removing existing SDK...')
                         shutil.rmtree(path)
+                    else:
+                        raise SDKInstallError("SDK {} is already installed.".format(sdk_info['version']))
 
                 contents = t.getnames()
                 for filename in contents:
@@ -156,15 +159,15 @@ class SDKManager(object):
 
             print('rebbletool: downloading sdk toolchain...')
             if sys.platform.startswith('darwin'):
-                platform = 'macos'
+                platform_name = 'macos'
                 sdkpath = MAC_SDK_PATH
             elif sys.platform.startswith('linux'):
-                platform = 'linux'
+                platform_name = 'linux'
                 sdkpath = LINUX_64_SDK_PATH
             else:
                 raise SDKInstallError("Couldn't figure out what requirements to install.")
 
-            print("rebbletool: downloading sdk toolchain for %s: %s..." % (platform, sdkpath))
+            print("rebbletool: downloading sdk toolchain for %s %s: %s..." % (platform_name, platform.processor(), sdkpath))
             req = requests.get(sdkpath)
             fileobj = BytesIO(req.content)
 
@@ -181,6 +184,28 @@ class SDKManager(object):
             # probably different for each sdk version, but example is 'pebble-sdk-4.5-mac'
             if len(toolchain_items) != 1:
                 raise Exception('unknown toolchain folder structure: %s' % toolchain_items)
+
+            if platform_name == 'macos' and platform.processor() == 'arm':
+                print('rebbletool: downloading macos dylib helper from %s...' % MAC_OS_DYLIB_HELPER_PATH)
+
+                do_emu_install = input("Install the x86 libraries required to run the emulator on Apple Silicon? (y/n) ")
+
+                # install only if user wants to
+                if do_emu_install == 'y':
+                    lib_folder = os.path.join(root_install_dir, 'lib')
+
+                    if os.path.exists(lib_folder):
+                        print('rebbletool: removing existing lib folder (%s)...' % lib_folder)
+                        shutil.rmtree(lib_folder)
+
+                    # grab the tarball from the internet
+                    helper_contents = req = requests.get(MAC_OS_DYLIB_HELPER_PATH)
+                    helper_contents_obj = BytesIO(helper_contents.content)
+
+                    # extract the tarball
+                    with tarfile.open(fileobj=helper_contents_obj, mode="r:*") as t2:
+                        print('rebbletool: extract macos x86 dylibs into', root_install_dir)
+                        t2.extractall(root_install_dir)
 
             # copy toolchain/bin/qemu-pebble to ../bin/qemu-pebble
             qemu_pebble_path = os.path.join(root_install_dir, 'bin', 'qemu-pebble')
@@ -236,11 +261,11 @@ class SDKManager(object):
         if os.path.exists(path):
             reinstall = input("SDK {} is already installed. Do you want to reinstall? (y/n) ".format(sdk_info['version']))
 
-            if reinstall.lower() == 'n':
-                raise SDKInstallError("SDK {} is already installed.".format(sdk_info['version']))
-            else:
+            if reinstall.lower() == 'y':
                 print('Removing existing SDK...')
                 shutil.rmtree(path)
+            else:
+                raise SDKInstallError("SDK {} is already installed.".format(sdk_info['version']))
         # For now, we ignore this field aside from bailing if it has content.
         Requirements(sdk_info['requirements']).ensure_satisfied()
         self._license_prompt()

@@ -12,14 +12,14 @@ https://developer.rebble.io/developer.pebble.com/guides/tools-and-resources/pebb
 ## Tested on:
 - macOS
   - `x86_64` - emulator works
-  - `M1/M2` - emulator broken. This can be remedied by installing Rosetta and putting the x86_64 versions of the needed dylibs in `~/.rebbletool/rebbletool/lib`
+  - `M1/M2` - emulator works, given x86 dylibs for pixman, etc. Running `sdk install latest` will ask you to install into the project directory if they are needed!
 - Linux
   - `x86_64` - emulator works
 
 ## Working commands:
 - `sdk install latest` - NOTE: patches currently only work for the latest 4.3
 - `install --phone <ip>`
-- `install --emulator` (out-of-box on linux, arm macs need work)
+- `install --emulator`
 - `build`
 - `logs`
 - `screenshot`
@@ -31,11 +31,12 @@ https://developer.rebble.io/developer.pebble.com/guides/tools-and-resources/pebb
 - `emu-tap --direction <+x|-x|+y|-y|+z|-z>
 - `emu-compass --heading <0-360>`
 
-
 ## Setup
 This doesn't really care about where it's installed. I've patched the sdk path to be inside the folder alongside this tool, so it's easier to clean up and manage without `cd`'ing all the time.
 
 You also don't _need_ to add it to your path, although it's much easier to type `rebble` than some other long path to the .bin`
+
+Prerequisites for Apple Silicon: Install Rosetta 2: `softwareupdate --install-rosetta`
 
 ```bash
 mkdir ~/.rebbletool
@@ -68,27 +69,6 @@ rebble install --phone <ip>
 # install on emulator
 # this works on x86 mac, and x86 linux
 rebble install --emulator <i>
-```
-
-## Development Notes
-
-Some notes on how this all works!
-
-We download the sdk and extract as normal, with some modifications to the requirements.txt file
-
-Then, we modify the waf file from the SDK. It doesn't execute in python3 since it contains null bytes, so we duplicate the file, and modify the original to remove the data and point the extract at the duplicate.
-
-Then, the tool runs a waf configure. The first go-around, this extracts but crashes. We detect this and install our `sdk.patch`, which fixes the known issues for python3, and continues.
-
-```bash
-# this will crash, but extract the waf file
-PATH="$DIR/pebble-sdk-4.5-mac/bin:$DIR/arm-cs-tools/bin:$PATH" NODE_PATH="$DIR/sdk/SDKs/current/sdk-core/../node_modules" '$DIR/sdk/SDKs/current/sdk-core/../.env/bin/python' '$DIR/sdk/SDKs/current/sdk-core/pebble/waf' 'configure'
-
-# apply our patches
-cd sdk && git apply ../sdk.patch
-
-# re-configuring should work
-PATH="$DIR/pebble-sdk-4.5-mac/bin:$DIR/arm-cs-tools/bin:$PATH" NODE_PATH="$DIR/sdk/SDKs/current/sdk-core/../node_modules" '$DIR/sdk/SDKs/current/sdk-core/../.env/bin/python' '$DIR/sdk/SDKs/current/sdk-core/pebble/waf' 'configure'
 ```
 
 ## Updating SDK patches
@@ -129,3 +109,37 @@ git diff > ../sdk.patch
 
 # create branch & pr the patch
 ```
+
+## Development Notes
+### Emulator on macOS
+To let the emulator run on macOS, you need the following libraries, compiled for x86:
+- `libglib-2.0.0.dylib`
+- `libintl.8.dylib`
+- `libpixman-1.0.dylib`
+- `libgthread-2.0.0.dylib`
+- `libpcre2-8.0.dylib`
+
+I have compiled these for you and zipped them here: https://public.richinfante.com/rebble/macos_x86_lib_pebble_qemu.tar.gz
+
+We set `DYLD_FALLBACK_LIBRARY_PATH` when starting the emulator so macOS can find them. If you accept the install of these, they are placed in the `lib/` folder of this repo (if following the directions, `~/.rebbletool/rebbletool/lib`)
+
+### SDK patching
+Some notes on how this all works!
+
+We download the sdk and extract as normal, with some modifications to the requirements.txt file
+
+Then, we modify the waf file from the SDK. It doesn't execute in python3 since it contains null bytes, so we duplicate the file, and modify the original to remove the data and point the extract at the duplicate.
+
+Then, the tool runs a waf configure. The first go-around, this extracts but crashes. We detect this and install our `sdk.patch`, which fixes the known issues for python3, and continues.
+
+```bash
+# this will crash, but extract the waf file
+PATH="$DIR/pebble-sdk-4.5-mac/bin:$DIR/arm-cs-tools/bin:$PATH" NODE_PATH="$DIR/sdk/SDKs/current/sdk-core/../node_modules" '$DIR/sdk/SDKs/current/sdk-core/../.env/bin/python' '$DIR/sdk/SDKs/current/sdk-core/pebble/waf' 'configure'
+
+# apply our patches
+cd sdk && git apply ../sdk.patch
+
+# re-configuring should work
+PATH="$DIR/pebble-sdk-4.5-mac/bin:$DIR/arm-cs-tools/bin:$PATH" NODE_PATH="$DIR/sdk/SDKs/current/sdk-core/../node_modules" '$DIR/sdk/SDKs/current/sdk-core/../.env/bin/python' '$DIR/sdk/SDKs/current/sdk-core/pebble/waf' 'configure'
+```
+
