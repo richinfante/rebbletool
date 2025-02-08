@@ -31,6 +31,24 @@ https://developer.rebble.io/developer.pebble.com/guides/tools-and-resources/pebb
 - `emu-tap --direction <+x|-x|+y|-y|+z|-z>`
 - `emu-compass --heading <0-360>`
 
+## TODO
+- [x] Make the cli tool start up
+- [x] Make the build system run as-is
+  - [x] Basic C app
+  - [x] Image handling
+  - [x] Font handling
+- [x] Install watchface to phone
+- [x] Emulator launch
+  - [x] on Linux
+  - [x] on x86 macOS
+  - [x] on Apple Silicon (via Rosetta 2)
+- [x] Emulator install watchface
+  - [x] Stripped down version of pypkjs that just does the qemu communication
+  - [ ] Find pypkjs replacement so we can use the JS sdk with the emulator
+- [ ] Setup a build system to produce a new version of the cross-compiler
+- [ ] Get the emulator to build so we can wasm-ify it, or compile for native arm
+- [ ] Replace / modernize the build system
+
 ## Setup
 This doesn't really care about where it's installed. I've patched the sdk path to be inside the folder alongside this tool, so it's easier to clean up and manage without `cd`'ing all the time.
 
