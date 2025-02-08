@@ -645,7 +645,7 @@ index 4884bd3..6c857d9 100644
  PEBBLE_APP_INFO_TEMPLATE = string.Template("""
  const PebbleProcessInfo __pbl_app_info __attribute__ ((section (".pbl_header"))) = {
 diff --git a/SDKs/4.3/sdk-core/pebble/common/tools/inject_metadata.py b/SDKs/4.3/sdk-core/pebble/common/tools/inject_metadata.py
-index 132a3d5..9735f74 100755
+index 132a3d5..d411883 100755
 --- a/SDKs/4.3/sdk-core/pebble/common/tools/inject_metadata.py
 +++ b/SDKs/4.3/sdk-core/pebble/common/tools/inject_metadata.py
 @@ -100,7 +100,7 @@ def inject_metadata(target_binary, target_elf, resources_file, timestamp, allow_
@@ -680,6 +680,15 @@ index 132a3d5..9735f74 100755
                      reading_section = True
                      i += 1 # skip the column title section
              else:
+@@ -178,7 +178,7 @@ def inject_metadata(target_binary, target_elf, resources_file, timestamp, allow_
+                     # end of the section
+                     reading_section = False
+                 else:
+-                    entries.append(int(lines[i].split(' ')[0], 16))
++                    entries.append(int(lines[i].split(b' ')[0], 16))
+             i += 1
+ 
+         # get any Global Offset Table (.got) entries
 @@ -189,11 +189,11 @@ def inject_metadata(target_binary, target_elf, resources_file, timestamp, allow_
          for line in lines:
              # We shouldn't need to do anything with the Procedure Linkage Table since we don't
