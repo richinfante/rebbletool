@@ -24,6 +24,11 @@ class GdbCommand(PebbleCommand):
     command = 'gdb'
     valid_connections = {'emulator'}
 
+    @classmethod
+    def add_parser(cls, parser):
+        parser = super(GdbCommand, cls).add_parser(parser)
+        parser.add_argument('--enable-sdk-gdb', action='store_true', help='Enable SDK GDB support in the emulator. This likely won\'t work on modern systems unless you happen to have Python 2.7.')
+
     @staticmethod
     def _find_app_section_offsets(app_elf_path):
         SectionRow = collections.namedtuple(
@@ -31,7 +36,7 @@ class GdbCommand(PebbleCommand):
 
         info = subprocess.check_output(
                 ['arm-none-eabi-objdump', '--headers', '--wide',
-                 app_elf_path]).decode('utf-8').split('\n')[5:]
+                 app_elf_path], env=os.environ).decode('utf-8').split('\n')[5:]
         sections = [SectionRow._make(section_string.split(None, 7))
                     for section_string in info if section_string]
         offsets = {section.name: int(section.vma, 16)
@@ -44,7 +49,7 @@ class GdbCommand(PebbleCommand):
         firmware debugging symbols ELF where GDB is unable to read the symbols
         itself.
         """
-        elf_sections = subprocess.check_output(["arm-none-eabi-readelf", "-W", "-s", fw_elf])
+        elf_sections = subprocess.check_output(["arm-none-eabi-readelf", "-W", "-s", fw_elf], env=os.environ)
 
         # Figure out where we load the app into firmware memory
         for line in elf_sections.split(b'\n'):
@@ -102,7 +107,11 @@ class GdbCommand(PebbleCommand):
         # Just asserting is okay because this should already be enforced by valid_connections.
         assert isinstance(self.pebble.transport, ManagedEmulatorTransport)
         self._ensure_correct_app()
-        add_tools_to_path()
+
+        if args.enable_sdk_gdb:
+            # The sdk gdb is linked to python 2.7, so by default we don't enable it.
+            # most systems can install (e.g. `brew install arm-none-eabi-gdb`) and use that instead.
+            add_tools_to_path()
 
         platform = self.pebble.transport.platform
         sdk_version = self.pebble.transport.version
@@ -164,7 +173,10 @@ class GdbCommand(PebbleCommand):
         # Ignore SIGINT, or we'll die every time the user tries to pause execution.
         signal.signal(signal.SIGINT, signal.SIG_IGN)
 
-        subprocess.call(gdb_args)
+        try:
+            subprocess.call(gdb_args, env=os.environ)
+        except FileNotFoundError:
+            raise ToolError("arm-none-eabi-gdb not installed! On macOS, you can  `brew install arm-none-eabi-gdb`.")
 
     epilog = """
 gdb cheat sheet:

@@ -71,6 +71,13 @@ rebble install --phone <ip>
 rebble install --emulator <i>
 ```
 
+## GDB
+Unfortunately, gdb relies on Python2. You can, however - use any `arm-none-eabi-gdb` gdb and it should work. Even better - homebrew has one you can very easily install to enable this on macOS, without going through the trouble of using a cross-compiler:
+
+```bash
+brew install arm-none-eabi-gdb
+```
+
 ## Updating SDK patches
 If you're going to help us fix issues in the SDK, this is how you do it.
 

@@ -22,7 +22,7 @@ import time
 from libpebble2.communication.transports.websocket import WebsocketTransport
 from libpebble2.exceptions import ConnectionError
 
-from pebble_tool.account import get_default_account
+# from pebble_tool.account import get_default_account
 from pebble_tool.exceptions import MissingEmulatorError, ToolError
 from pebble_tool.util.analytics import post_event
 from . import sdk_path, get_sdk_persist_dir, sdk_manager
@@ -238,7 +238,7 @@ class ManagedEmulatorTransport(WebsocketTransport):
         process = subprocess.Popen(command, stdout=self._get_output(), stderr=self._get_output(), env={
             # our current environment
             **os.environ,
-            
+
             # pass our dyld path to the emulator (for mac)
             'DYLD_FALLBACK_LIBRARY_PATH': dyld_dir,
 
@@ -330,9 +330,9 @@ class ManagedEmulatorTransport(WebsocketTransport):
             '--debug',
         ]
 
-        account = get_default_account()
-        if account.is_logged_in:
-            command.extend(['--oauth', account.bearer_token])
+        # account = get_default_account()
+        # if account.is_logged_in:
+        #     command.extend(['--oauth', account.bearer_token])
         if logger.getEffectiveLevel() <= logging.DEBUG:
             command.append('--debug')
         logger.info("pypkjs command: %s", subprocess.list2cmdline(command))

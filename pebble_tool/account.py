@@ -13,7 +13,7 @@ import oauth2client.tools as tools
 
 from pebble_tool.util import get_persist_dir
 
-AUTH_SERVER   = os.getenv("PEBBLE_OAUTH_SERVER", "https://auth.getpebble.com")
+AUTH_SERVER   = os.getenv("PEBBLE_OAUTH_SERVER", "https://auth.rebble.io")
 AUTHORIZE_URI = AUTH_SERVER + "/oauth/authorize"
 TOKEN_URI     = AUTH_SERVER + "/oauth/token"
 ME_URI        = AUTH_SERVER + "/api/v1/me.json"
