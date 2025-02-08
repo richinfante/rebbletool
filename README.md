@@ -40,10 +40,11 @@ https://developer.rebble.io/developer.pebble.com/guides/tools-and-resources/pebb
 - [x] Install watchface to phone
 - [x] Emulator launch
   - [x] on Linux
-  - [x] on x86 macOS
+  - [x] on x86 macOS ([see notes](#emulator-on-macos))
   - [x] on Apple Silicon (via Rosetta 2)
-- [x] Emulator install watchface
-  - [x] Stripped down version of pypkjs that just does the qemu communication
+- [x] Emulator install of a watchface
+  - [x] [Stripped down version of pypkjs](https://github.com/richinfante/pypkjs) that just does the qemu communication
+  - [x] [Patch libpebble2](https://github.com/richinfante/libpebble2) so that it can communicate
   - [ ] Find pypkjs replacement so we can use the JS sdk with the emulator
 - [ ] Setup a build system to produce a new version of the cross-compiler
 - [ ] Get the emulator to build so we can wasm-ify it, or compile for native arm
