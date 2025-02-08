@@ -1,15 +1,15 @@
 # RebbleTool
 
-An upgraded version of pebbletool that runs on modern python
+An upgraded version of `pebbletoo`l that runs on modern python (tested on 3.13)
 
-**Very Experimental, Use At Your Own Risk!!!**
+**_Very_ Experimental, Use At Your Own Risk!!!**
 
 How to use:
 https://developer.rebble.io/developer.pebble.com/guides/tools-and-resources/pebble-tool/index.html
 
 ## Setup
 ```bash
-mkdir ~/.rebbletool  # or any other folder, we do not care
+mkdir ~/.rebbletool
 cd ~/.rebbletool
 git clone https://github.com/richinfante/rebbletool.git
 cd rebbletool
@@ -18,7 +18,9 @@ python3 -m venv .env
 source .env/bin/activate
 pip3 install -r requirements.txt
 
+# Recommended - add to your $PATH
 # or your equivalent for your shell (e.g. ~/.zshrc instead of ~/.bash_profile)
+# if you don't, you need to run `~/.rebbletool/rebbletool/bin/rebble` instead of `rebble`
 echo 'export PATH=~/.rebbletool/rebbletool/bin:$PATH' >> ~/.bash_profile
 source ~/.bash_profile
 
@@ -32,11 +34,18 @@ rebble build
 
 # install on your phone
 rebble install --phone <ip>
+
+# install on emulator
+# this works on x86 mac, and x86 linux
+rebble install --emulator <i>
 ```
 
-## Known Issues
-- Fonts don't render correctly
-- Emulators don't work on any platform
+## Tested on:
+- macOS
+  - `x86_64` - emulator works
+  - `M1/M2` - emulator broken. This can be remedied by installing Rosetta and putting the x86_64 versions of the needed dylibs in `~/.rebbletool/rebbletool/lib`
+- Linux
+  - `x86_64` - emulator works
 
 ## Working commands:
 - `sdk install latest` - NOTE: patches currently only work for the latest 4.3
@@ -53,17 +62,15 @@ rebble install --phone <ip>
 - `emu-tap --direction <+x|-x|+y|-y|+z|-z>
 - `emu-compass --heading <0-360>`
 
-## Tested on:
-- macOS (M2)
-- Linux (x86_64)
-
 ## Development Notes
+
+Some notes on how this all works!
 
 We download the sdk and extract as normal, with some modifications to the requirements.txt file
 
-Then, we modify the waf file, so that the data is split into a separate file. Python3 doesn't like the original packed waf since it has null bytes in it.
+Then, we modify the waf file from the SDK. It doesn't execute in python3 since it contains null bytes, so we duplicate the file, and modify the original to remove the data and point the extract at the duplicate.
 
-Then, we run a configure. This _mostly_ works, extracting the files we need. Then, we run our patch to allow it to actually function for our build.
+Then, the tool runs a waf configure. The first go-around, this extracts but crashes. We detect this and install our `sdk.patch`, which fixes the known issues for python3, and continues.
 
 ```bash
 # this will crash, but extract the waf file
@@ -76,9 +83,11 @@ cd sdk && git apply ../sdk.patch
 PATH="$DIR/pebble-sdk-4.5-mac/bin:$DIR/arm-cs-tools/bin:$PATH" NODE_PATH="$DIR/sdk/SDKs/current/sdk-core/../node_modules" '$DIR/sdk/SDKs/current/sdk-core/../.env/bin/python' '$DIR/sdk/SDKs/current/sdk-core/pebble/waf' 'configure'
 ```
 
-When running build, macOS will complain about every binary. gotta do something about that.
-
 ## Updating SDK patches
+If you're going to help us fix issues in the SDK, this is how you do it.
+
+Essentially, we re-install the sdk and initialize the sdk folder as a git repo. We commit the initial version and use that to snapshot changes. We then apply the current patches, and can re-generate the patch file.
+
 ```bash
 # do a fresh install (answer yes to "reinstall")
 rebble sdk install latest
