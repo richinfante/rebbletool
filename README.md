@@ -1,6 +1,6 @@
 # RebbleTool
 
-An upgraded version of `pebbletoo`l that runs on modern python (tested on 3.13)
+An upgraded version of `pebbletool` that runs on modern python (tested on 3.13)
 
 **_Very_ Experimental, Use At Your Own Risk!!!**
 
