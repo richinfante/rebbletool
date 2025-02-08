@@ -28,7 +28,7 @@ https://developer.rebble.io/developer.pebble.com/guides/tools-and-resources/pebb
 - `wipe`
 - `emu-time-format --format <12h/24h>`
 - `emu-battery --percent [0-100] [--charging]`
-- `emu-tap --direction <+x|-x|+y|-y|+z|-z>
+- `emu-tap --direction <+x|-x|+y|-y|+z|-z>`
 - `emu-compass --heading <0-360>`
 
 ## Setup
