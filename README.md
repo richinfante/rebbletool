@@ -42,9 +42,7 @@ It seems there's currently some state management bug where _two_ instances of py
 #
 ```
 
-If you encounter this, a `rebble wipe` should clear out stored PIDs of pypkjs and allow you to install a something successfully into the emulator, although you may have instances still running, and you might need to manually kill the processes.
-
-I have found this usually happens when QEMU is exited, but pypkjs is still running.
+If you encounter this, a quick (and probably unwise fix) is to run `rebble wipe`, which should clear out the stored PIDs of pypkjs and allow you to install a something successfully into the emulator. You might need to manually kill the old processes manually. It seems there ends up to be two instances of pypkjs, one of which is connected, and the other which crashes.
 
 ## TODO
 - [x] Make the cli tool start up
@@ -60,7 +58,7 @@ I have found this usually happens when QEMU is exited, but pypkjs is still runni
 - [x] Emulator install of a watchface
   - [x] [Stripped down version of pypkjs](https://github.com/richinfante/pypkjs) that just does the qemu communication
   - [x] [Patch libpebble2](https://github.com/richinfante/libpebble2) so that it can communicate
-  - [ ] Find pypkjs replacement so we can use the JS sdk with the emulator
+  - [x] ~Find~ Make [pypkjs work with STPYv8](https://github.com/richinfante/pypkjs) so we can use the JS sdk with the emulator
 - [ ] Setup a build system to produce a new version of the cross-compiler
 - [ ] Get the emulator to build so we can wasm-ify it, or compile for native arm
 - [ ] Replace / modernize the build system
