@@ -42,7 +42,7 @@ It seems there's currently some state management bug where _two_ instances of py
 #
 ```
 
-If you encounter this, a quick (and probably unwise fix) is to run `rebble wipe`, which should clear out the stored PIDs of pypkjs and allow you to install a something successfully into the emulator. You might need to manually kill the old processes manually. It seems there ends up to be two instances of pypkjs, one of which is connected, and the other which crashes.
+If you encounter this, a quick (and probably unwise fix) is to run `rebble wipe`, which should clear out the stored PIDs of pypkjs and allow you to install a something successfully into the emulator. You might need to manually kill the old processes. It seems there ends up to be two instances of pypkjs, one of which is connected, and the other which crashes.
 
 ## TODO
 - [x] Make the cli tool start up
