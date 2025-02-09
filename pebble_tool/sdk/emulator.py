@@ -335,7 +335,7 @@ class ManagedEmulatorTransport(WebsocketTransport):
         #     command.extend(['--oauth', account.bearer_token])
         if logger.getEffectiveLevel() <= logging.DEBUG:
             command.append('--debug')
-        logger.info("pypkjs command: %s", subprocess.list2cmdline(command))
+        print("pypkjs command: %s", subprocess.list2cmdline(command))
         process = subprocess.Popen(command, stdout=self._get_output(), stderr=self._get_output())
         time.sleep(0.5)
         if process.poll() is not None:

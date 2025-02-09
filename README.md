@@ -30,6 +30,21 @@ https://developer.rebble.io/developer.pebble.com/guides/tools-and-resources/pebb
 - `emu-battery --percent [0-100] [--charging]`
 - `emu-tap --direction <+x|-x|+y|-y|+z|-z>`
 - `emu-compass --heading <0-360>`
+- `emu-app-config` (--file seems to not set up the callback properly). This also assumes your config page implements the `return_to` query param behavior [described in the docs](https://developer.rebble.io/developer.pebble.com/guides/user-interfaces/app-configuration-static/index.html)
+
+## Known issues
+It seems there's currently some state management bug where _two_ instances of pypkjs are launched. In programs with asynchronous javascript (e.g. setTimeout, geolocation, etc.), this might cause a major crash, like the following, upon installing something into the emulator:
+
+```
+#
+# Fatal error in v8::Context::Exit()
+# Cannot exit non-entered context
+#
+```
+
+If you encounter this, a `rebble wipe` should clear out stored PIDs of pypkjs and allow you to install a something successfully into the emulator, although you may have instances still running, and you might need to manually kill the processes.
+
+I have found this usually happens when QEMU is exited, but pypkjs is still running.
 
 ## TODO
 - [x] Make the cli tool start up

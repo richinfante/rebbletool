@@ -4,6 +4,7 @@ __author__ = 'katharine'
 import atexit
 import argparse
 import logging
+import platform
 import sys
 import requests.packages.urllib3 as urllib3
 
@@ -33,6 +34,7 @@ def run_tool(args=None):
     parser = argparse.ArgumentParser(description="Rebble Tool", prog="rebble",
                                      epilog="For help on an individual command, call that command with --help.")
     version_string = "Rebble Tool v{}".format(__version__)
+    version_string += " on Python {}".format(platform.python_version())
     if sdk_version() is not None:
         version_string += " (active SDK: v{})".format(sdk_version())
     parser.add_argument("--version", action="version", version=version_string)
