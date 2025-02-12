@@ -88,13 +88,13 @@ def _copy_from_template(template, template_root, path, options):
         """
         copied_files = 0
 
-        for dest, origins in group.iteritems():
+        for dest, origins in group.items():
             target_path = os.path.join(substitute(project_root), dest)
             if origins is None:
                 _mkdirs(target_path)
                 continue
 
-            if isinstance(origins, basestring):
+            if isinstance(origins, str):
                 origins = [origins]
 
             origin_path = extant_path(os.path.join(template_root, x) for x in origins)
