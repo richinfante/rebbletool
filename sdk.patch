@@ -306,7 +306,7 @@ index dff0442..fb90103 100644
  	def run(self):
  		bin_type=self.bin_type
 diff --git a/SDKs/4.3/sdk-core/pebble/.waf3-1.7.11-951087d39789950ed009f0c86ce75e7b/waflib/extras/sdk_helpers.py b/SDKs/4.3/sdk-core/pebble/.waf3-1.7.11-951087d39789950ed009f0c86ce75e7b/waflib/extras/sdk_helpers.py
-index d49a40b..9c7dc76 100644
+index d49a40b..721ac32 100644
 --- a/SDKs/4.3/sdk-core/pebble/.waf3-1.7.11-951087d39789950ed009f0c86ce75e7b/waflib/extras/sdk_helpers.py
 +++ b/SDKs/4.3/sdk-core/pebble/.waf3-1.7.11-951087d39789950ed009f0c86ce75e7b/waflib/extras/sdk_helpers.py
 @@ -9,7 +9,7 @@ import re
@@ -327,6 +327,15 @@ index d49a40b..9c7dc76 100644
  	width=struct.unpack('>I',data[4:8])[0]
  	height=struct.unpack('>I',data[8:12])[0]
  	return width,height
+@@ -48,7 +48,7 @@ def append_to_attr(self,attr,new_values):
+ 	values.extend(new_values)
+ 	setattr(self,attr,values)
+ def configure_libraries(ctx,libraries):
+-	dependencies=libraries.keys()
++	dependencies=list(libraries.keys())
+ 	lib_json=[]
+ 	lib_resources_json={}
+ 	index=0
 @@ -91,7 +91,7 @@ def get_target_platforms(ctx):
  		target_platforms=list(set(supported_platforms)&set(ctx.env.REQUESTED_PLATFORMS))
  	if not target_platforms:
