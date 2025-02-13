@@ -253,13 +253,16 @@ class SDKManager(object):
                 print("Cleanup failed.")
             raise
 
-    def install_remote_sdk(self, version):
+    def install_remote_sdk(self, version, force_reinstall=False):
         sdk_info = self.request("/v1/files/sdk-core/{}?channel={}".format(version, self.get_channel())).json()
         if 'version' not in sdk_info:
             raise SDKInstallError("SDK {} could not be downloaded.".format(version))
         path = os.path.normpath(os.path.join(self.sdk_dir, sdk_info['version']))
         if os.path.exists(path):
-            reinstall = input("SDK {} is already installed. Do you want to reinstall? (y/n) ".format(sdk_info['version']))
+            if force_reinstall:
+                reinstall = 'y'
+            else:
+                reinstall = input("SDK {} is already installed. Do you want to reinstall? (y/n) ".format(sdk_info['version']))
 
             if reinstall.lower() == 'y':
                 print('Removing existing SDK...')

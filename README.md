@@ -63,6 +63,22 @@ If you encounter this, a quick (and probably unwise fix) is to run `rebble wipe`
 - [ ] Get the emulator to build so we can wasm-ify it, or compile for native arm
 - [ ] Replace / modernize the build system
 
+## Upgrading
+Newer releases of `rebbletool` support a self-update command, which will both pull the latest repo and start a reinstall of the sdk to re-apply any new patches
+
+To do this, run:
+```bash
+rebble update
+```
+
+If you have a release before that was built, it'll just print command usage. If that is the case, you need to do a manual update to get the latest. This isn't too difficult, just:
+```bash
+cd ~/.rebbletool/rebbletool  # ((or wherever you set it up!))
+git pull  # pull latest version of rebbletool
+pip3 install -r requirements.txt  # reinstall to get latest dependencies (i.e. pypkjs and libpebble2)
+rebble sdk install latest  # force re-install so latest patches are applied
+```
+
 ## Setup
 This doesn't really care about where it's installed. I've patched the sdk path to be inside the folder alongside this tool, so it's easier to clean up and manage without `cd`'ing all the time.
 

@@ -22,7 +22,7 @@ from .commands.sdk.project import build
 
 from .commands.base import register_children
 from .commands import (install, logs, screenshot, timeline, emucontrol, ping, account, repl,
-                       transcription_server, data_logging)
+                       transcription_server, data_logging, update)
 from .commands.sdk import create, emulator
 from .commands.sdk.project import package, analyse_size, convert, debug
 
@@ -56,5 +56,5 @@ def wait_for_cleanup():
     now = time.time()
     # wait_for_analytics(2)
     # wait_for_update_checks(2)
-    logging.info("Spent %f seconds waiting for analytics.", time.time() - now)
+    # logging.info("Spent %f seconds waiting for analytics.", time.time() - now)
     config.save()
