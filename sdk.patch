@@ -280,10 +280,10 @@ index dc60ce7..06f10e0 100644
  	resource_id_mapping={}
  	next_id=1
 diff --git a/SDKs/4.3/sdk-core/pebble/.waf3-1.7.11-951087d39789950ed009f0c86ce75e7b/waflib/extras/process_timeline_resources.py b/SDKs/4.3/sdk-core/pebble/.waf3-1.7.11-951087d39789950ed009f0c86ce75e7b/waflib/extras/process_timeline_resources.py
-index 7cd7655..1a6285b 100644
+index 7cd7655..18b58ce 100644
 --- a/SDKs/4.3/sdk-core/pebble/.waf3-1.7.11-951087d39789950ed009f0c86ce75e7b/waflib/extras/process_timeline_resources.py
 +++ b/SDKs/4.3/sdk-core/pebble/.waf3-1.7.11-951087d39789950ed009f0c86ce75e7b/waflib/extras/process_timeline_resources.py
-@@ -8,7 +8,7 @@ from waflib import Node,Task,TaskGen
+@@ -8,11 +8,11 @@ from waflib import Node,Task,TaskGen
  from waflib.TaskGen import before_method,feature
  from resources.types.resource_definition import ResourceDefinition
  from resources.types.resource_object import ResourceObject
@@ -292,6 +292,25 @@ index 7cd7655..1a6285b 100644
  class layouts_json(Task.Task):
  	def run(self):
  		published_media_dict={m['id']:m['name']for m in self.published_media}
+-		timeline_entries=[{'id':media_id,'name':media_name}for media_id,media_name in published_media_dict.iteritems()]
++		timeline_entries=[{'id':media_id,'name':media_name}for media_id,media_name in published_media_dict.items()]
+ 		image_uris={'resources':{'app://images/'+r['name']:r['id']for r in timeline_entries}}
+ 		with open(self.outputs[0].abspath(),'w')as f:
+ 			json.dump(image_uris,f,indent=8)
+@@ -60,11 +60,11 @@ class timeline_reso(Task.Task):
+ 						bld.fatal("Resource {} in publishedMedia is missing values for ['glance'] ""and ['timeline']['tiny'].".format(published_media_name))
+ 			if timeline_id>=len(timeline_resources):
+ 				timeline_resources.extend({'tiny':0,'small':0,'large':0}for x in range(len(timeline_resources),timeline_id+1))
+-			for size,res_id in item['timeline'].iteritems():
++			for size,res_id in item['timeline'].items():
+ 				if res_id not in resource_id_mapping:
+ 					bld.fatal("Invalid resource ID {} specified in publishedMedia".format(res_id))
+ 				timeline_resources[timeline_id][size]=resource_id_mapping[res_id]
+-		table=TLUT_SIGNATURE
++		table=TLUT_SIGNATURE.encode('ascii')
+ 		for r in timeline_resources:
+ 			table+=struct.pack(TIMELINE_RESOURCE_TABLE_ENTRY_FMT,r['tiny'],r['small'],r['large'])
+ 		r=ResourceObject(ResourceDefinition('raw','TIMELINE_LUT',''),table)
 diff --git a/SDKs/4.3/sdk-core/pebble/.waf3-1.7.11-951087d39789950ed009f0c86ce75e7b/waflib/extras/report_memory_usage.py b/SDKs/4.3/sdk-core/pebble/.waf3-1.7.11-951087d39789950ed009f0c86ce75e7b/waflib/extras/report_memory_usage.py
 index dff0442..fb90103 100644
 --- a/SDKs/4.3/sdk-core/pebble/.waf3-1.7.11-951087d39789950ed009f0c86ce75e7b/waflib/extras/report_memory_usage.py
@@ -306,10 +325,10 @@ index dff0442..fb90103 100644
  	def run(self):
  		bin_type=self.bin_type
 diff --git a/SDKs/4.3/sdk-core/pebble/.waf3-1.7.11-951087d39789950ed009f0c86ce75e7b/waflib/extras/sdk_helpers.py b/SDKs/4.3/sdk-core/pebble/.waf3-1.7.11-951087d39789950ed009f0c86ce75e7b/waflib/extras/sdk_helpers.py
-index d49a40b..721ac32 100644
+index d49a40b..2fec055 100644
 --- a/SDKs/4.3/sdk-core/pebble/.waf3-1.7.11-951087d39789950ed009f0c86ce75e7b/waflib/extras/sdk_helpers.py
 +++ b/SDKs/4.3/sdk-core/pebble/.waf3-1.7.11-951087d39789950ed009f0c86ce75e7b/waflib/extras/sdk_helpers.py
-@@ -9,7 +9,7 @@ import re
+@@ -9,18 +9,18 @@ import re
  from waflib import Logs
  from pebble_package import LibraryPackage
  from pebble_sdk_platform import pebble_platforms,maybe_import_internal
@@ -318,8 +337,13 @@ index d49a40b..721ac32 100644
  from resources.types.resource_object import ResourceObject
  def _get_pbi_size(data):
  	width=struct.unpack('<h',data[8:10])[0]
-@@ -20,7 +20,7 @@ def _get_pdc_size(data):
- 	height=struct.unpack('>I',data[8:10])[0]
+ 	height=struct.unpack('<h',data[10:12])[0]
+ 	return width,height
+ def _get_pdc_size(data):
+-	width=struct.unpack('>I',data[6:8])[0]
+-	height=struct.unpack('>I',data[8:10])[0]
++	width=struct.unpack('<H',data[6:8])[0]
++	height=struct.unpack('<H',data[8:10])[0]
  	return width,height
  def _get_png_size(data):
 -	assert data[:4]=='IHDR'
