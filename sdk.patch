@@ -87,6 +87,19 @@ index a7693a3..1a250aa 100644
  		if kw.get('flat',False):
  			return' '.join([x.path_from(self)for x in ret])
  		return ret
+diff --git a/SDKs/4.3/sdk-core/pebble/.waf3-1.7.11-951087d39789950ed009f0c86ce75e7b/waflib/Tools/tex.py b/SDKs/4.3/sdk-core/pebble/.waf3-1.7.11-951087d39789950ed009f0c86ce75e7b/waflib/Tools/tex.py
+index 6813022..1160eb7 100644
+--- a/SDKs/4.3/sdk-core/pebble/.waf3-1.7.11-951087d39789950ed009f0c86ce75e7b/waflib/Tools/tex.py
++++ b/SDKs/4.3/sdk-core/pebble/.waf3-1.7.11-951087d39789950ed009f0c86ce75e7b/waflib/Tools/tex.py
+@@ -119,7 +119,7 @@ class tex(Task.Task):
+ 			Logs.error('error bibunitscan')
+ 		else:
+ 			if bibunits:
+-				fn=['bu'+str(i)for i in xrange(1,len(bibunits)+1)]
++				fn=['bu'+str(i)for i in range(1,len(bibunits)+1)]
+ 				if fn:
+ 					Logs.warn('calling bibtex on bibunits')
+ 				for f in fn:
 diff --git a/SDKs/4.3/sdk-core/pebble/.waf3-1.7.11-951087d39789950ed009f0c86ce75e7b/waflib/ansiterm.py b/SDKs/4.3/sdk-core/pebble/.waf3-1.7.11-951087d39789950ed009f0c86ce75e7b/waflib/ansiterm.py
 index 0de6171..40c63d1 100644
 --- a/SDKs/4.3/sdk-core/pebble/.waf3-1.7.11-951087d39789950ed009f0c86ce75e7b/waflib/ansiterm.py
@@ -401,7 +414,7 @@ index 4fac4c8..b2399b8 100644
 +		os.chmod(xcscript_path, 0o755)
  		f.close()
 diff --git a/SDKs/4.3/sdk-core/pebble/common/tools/binutils.py b/SDKs/4.3/sdk-core/pebble/common/tools/binutils.py
-index 5543bba..5f0ef8d 100644
+index 5543bba..5609906 100644
 --- a/SDKs/4.3/sdk-core/pebble/common/tools/binutils.py
 +++ b/SDKs/4.3/sdk-core/pebble/common/tools/binutils.py
 @@ -43,14 +43,14 @@ class FileInfo(object):
@@ -411,7 +424,8 @@ index 5543bba..5f0ef8d 100644
 -        print '  %s: size %u' % (self.filename, self.size)
 +        print('  %s: size %u' % (self.filename, self.size))
          if verbose:
-             l = sorted(self.symbols.itervalues(), key=lambda x: -x.size)
+-            l = sorted(self.symbols.itervalues(), key=lambda x: -x.size)
++            l = sorted(self.symbols.values(), key=lambda x: -x.size)
              for s in l:
 -                print '    %6u %-36s' % (s.size, s.name)
 +                print('    %6u %-36s' % (s.size, s.name))
@@ -453,7 +467,7 @@ index 5543bba..5f0ef8d 100644
          return 0
      # text, data, bss
 diff --git a/SDKs/4.3/sdk-core/pebble/common/tools/bitmapgen.py b/SDKs/4.3/sdk-core/pebble/common/tools/bitmapgen.py
-index 56b0d51..88ac32c 100644
+index 56b0d51..3469599 100644
 --- a/SDKs/4.3/sdk-core/pebble/common/tools/bitmapgen.py
 +++ b/SDKs/4.3/sdk-core/pebble/common/tools/bitmapgen.py
 @@ -1,6 +1,6 @@
@@ -482,6 +496,27 @@ index 56b0d51..88ac32c 100644
                             self.info_flags(),
                             self.x,
                             self.y,
+@@ -166,7 +166,7 @@ class PebbleBitmap(object):
+ 
+         def pack_pixels_to_bitblt_word(pixels, x_offset, x_max):
+             word = 0
+-            for column in xrange(0, 32):
++            for column in range(0, 32):
+                 x = x_offset + column
+                 if (x < x_max):
+                     pixel = pixels[x]
+@@ -178,9 +178,9 @@ class PebbleBitmap(object):
+         out_pixels = []
+         row_size_words = self.row_size_bytes() / 4
+ 
+-        for row in xrange(self.y, self.y + self.h):
++        for row in range(self.y, self.y + self.h):
+             x_max = self._im_size[0]
+-            for column_word in xrange(0, row_size_words):
++            for column_word in range(0, row_size_words):
+                 x_offset = self.x + column_word * 32
+                 out_pixels.append(pack_pixels_to_bitblt_word(src_pixels[row],
+                                                              x_offset,
 @@ -200,10 +200,10 @@ class PebbleBitmap(object):
  
          assert self.bitdepth is not None
@@ -574,7 +609,7 @@ index 56b0d51..88ac32c 100644
  def process_cmd_line_args():
      parser = argparse.ArgumentParser(description="Generate pebble-usable files from png images")
 diff --git a/SDKs/4.3/sdk-core/pebble/common/tools/font/fontgen.py b/SDKs/4.3/sdk-core/pebble/common/tools/font/fontgen.py
-index 142d3af..7df5fdf 100755
+index 142d3af..cb6d11f 100755
 --- a/SDKs/4.3/sdk-core/pebble/common/tools/font/fontgen.py
 +++ b/SDKs/4.3/sdk-core/pebble/common/tools/font/fontgen.py
 @@ -89,7 +89,7 @@ MAX_GLYPHS = 256
@@ -606,6 +641,15 @@ index 142d3af..7df5fdf 100755
                  raise Exception("Supplied filter argument was not a valid regular expression."
                                  "Font: {}".format(self.ttf_path))
          else:
+@@ -224,7 +224,7 @@ class Font:
+         src_ptr = self.max_glyph_size - len(glyph_packed)
+ 
+         def glyph_packed_iterator(tbl, num):
+-            for i in xrange(0, num):
++            for i in range(0, num):
+                 yield struct.unpack('<B', tbl[i])[0]
+ 
+         # Generate glyph buffer. Ignore the header
 @@ -282,7 +282,7 @@ class Font:
          self.face.load_glyph(gindex, flags)
          # Font metrics
@@ -686,6 +730,19 @@ index 4884bd3..6c857d9 100644
  
  PEBBLE_APP_INFO_TEMPLATE = string.Template("""
  const PebbleProcessInfo __pbl_app_info __attribute__ ((section (".pbl_header"))) = {
+diff --git a/SDKs/4.3/sdk-core/pebble/common/tools/generate_c_byte_array.py b/SDKs/4.3/sdk-core/pebble/common/tools/generate_c_byte_array.py
+index 8a5047c..819a6db 100644
+--- a/SDKs/4.3/sdk-core/pebble/common/tools/generate_c_byte_array.py
++++ b/SDKs/4.3/sdk-core/pebble/common/tools/generate_c_byte_array.py
+@@ -1,7 +1,7 @@
+ 
+ def write(output_file, bytes, var_name):
+     output_file.write("static const uint8_t {var_name}[] = {{\n  ".format(var_name=var_name))
+-    for byte, index in zip(bytes, xrange(0, len(bytes))):
++    for byte, index in zip(bytes, range(0, len(bytes))):
+         if index != 0 and index % 16 == 0:
+             output_file.write("/* bytes {0} - {1} */\n  ".format(index - 16, index))
+         output_file.write("0x%02x, " % ord(byte))
 diff --git a/SDKs/4.3/sdk-core/pebble/common/tools/inject_metadata.py b/SDKs/4.3/sdk-core/pebble/common/tools/inject_metadata.py
 index 132a3d5..d411883 100755
 --- a/SDKs/4.3/sdk-core/pebble/common/tools/inject_metadata.py
@@ -855,6 +912,37 @@ index 78abaee..138b9de 100644
  
      return r, g, b, a
  
+diff --git a/SDKs/4.3/sdk-core/pebble/common/tools/pebble_package.py b/SDKs/4.3/sdk-core/pebble/common/tools/pebble_package.py
+index ba6dc4b..e55d31b 100644
+--- a/SDKs/4.3/sdk-core/pebble/common/tools/pebble_package.py
++++ b/SDKs/4.3/sdk-core/pebble/common/tools/pebble_package.py
+@@ -41,7 +41,7 @@ class PebblePackage(object):
+ 
+     def pack(self, package_path=None):
+         with zipfile.ZipFile(os.path.join(package_path, self.package_filename), 'w') as zip_file:
+-            for filename, file_path in self.package_files.iteritems():
++            for filename, file_path in self.package_files.items():
+                 zip_file.write(file_path, filename)
+             zip_file.comment = type(self).__name__
+ 
+@@ -74,13 +74,13 @@ class LibraryPackage(PebblePackage):
+         super(LibraryPackage, self).__init__(package_filename)
+ 
+     def add_files(self, includes, binaries, resources, js):
+-        for include, include_path in includes.iteritems():
++        for include, include_path in includes.items():
+             self.add_file(os.path.join('include', include), include_path)
+-        for binary, binary_path in binaries.iteritems():
++        for binary, binary_path in binaries.items():
+             self.add_file(os.path.join('binaries', binary), binary_path)
+-        for resource, resource_path in resources.iteritems():
++        for resource, resource_path in resources.items():
+             self.add_file(os.path.join('resources', resource), resource_path)
+-        for js_file, js_file_path in js.iteritems():
++        for js_file, js_file_path in js.items():
+             self.add_file(os.path.join('js', js_file), js_file_path)
+ 
+     def unpack(self, package_path='dist'):
 diff --git a/SDKs/4.3/sdk-core/pebble/common/tools/png2pblpng.py b/SDKs/4.3/sdk-core/pebble/common/tools/png2pblpng.py
 index d30427f..0ee8e1d 100644
 --- a/SDKs/4.3/sdk-core/pebble/common/tools/png2pblpng.py
