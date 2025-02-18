@@ -112,7 +112,9 @@ class EmuAppConfigCommand(PebbleCommand):
         except IOError as e:
             raise ToolError(str(e))
 
-        if args.file:
+        if args.page:
+            config_url = args.page
+        elif args.file:
             config_url = "file://{}".format(os.path.realpath(os.path.expanduser(args.file)))
         else:
             config_url = response.config.data
@@ -132,6 +134,7 @@ class EmuAppConfigCommand(PebbleCommand):
     def add_parser(cls, parser):
         parser = super(EmuAppConfigCommand, cls).add_parser(parser)
         parser.add_argument('--file', help="Name of local file to use for settings page in lieu of URL specified in JS")
+        parser.add_argument("--page", help="URL of the page to use for settings page in lieu of URL specified in JS")
         return parser
 
 
