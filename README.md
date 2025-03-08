@@ -14,7 +14,7 @@ https://developer.rebble.io/developer.pebble.com/guides/tools-and-resources/pebb
   - `x86_64` - emulator works
   - `M1/M2` - emulator works, [given x86 dylibs for pixman, etc](#emulator-on-macos). Running `sdk install latest` will ask you to install into the project directory if they are needed!
 - Linux
-  - `x86_64` - emulator works
+  - `x86_64` - emulator works, tested on Arch (as of 2025-02-06)
 
 ## Working commands:
 - `sdk install latest` - NOTE: patches currently only work for the latest 4.3
