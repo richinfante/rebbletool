@@ -32,4 +32,4 @@ sh==2.2.1
 # https://github.com/richinfante/pypkjs
 # https://github.com/richinfante/libpebble2
 https://public.richinfante.com/rebble/libpebble2-0.0.29.tar.gz
-https://public.richinfante.com/rebble/pypkjs-1.1.10.tar.gz
+https://public.richinfante.com/rebble/pypkjs-1.1.11.tar.gz
