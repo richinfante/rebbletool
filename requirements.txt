@@ -27,6 +27,7 @@ virtualenv==20.29.1
 websocket-client==1.8.0
 wheel==0.45.1
 sh==2.2.1
+freetype-py==2.5.1
 
 # custom-modified versions of libpebble2 and pypkjs for Rebble
 # https://github.com/richinfante/pypkjs
