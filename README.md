@@ -1,5 +1,7 @@
 # RebbleTool
 
+## ⚠️ Archived - there's an official new SDK which works with the latest devices: https://developer.repebble.com/sdk/
+
 An upgraded version of `pebbletool` that runs on modern python (tested on 3.13)
 
 **_Very_ Experimental, Use At Your Own Risk!!!**
