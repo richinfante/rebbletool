@@ -505,9 +505,12 @@ index 56b0d51..3469599 100644
                  x = x_offset + column
                  if (x < x_max):
                      pixel = pixels[x]
-@@ -178,9 +178,9 @@ class PebbleBitmap(object):
+@@ -176,17 +176,17 @@ class PebbleBitmap(object):
+
+         src_pixels = self._im_pixels
          out_pixels = []
-         row_size_words = self.row_size_bytes() / 4
+-        row_size_words = self.row_size_bytes() / 4
++        row_size_words = int(self.row_size_bytes() / 4)
  
 -        for row in xrange(self.y, self.y + self.h):
 +        for row in range(self.y, self.y + self.h):
@@ -517,6 +520,13 @@ index 56b0d51..3469599 100644
                  x_offset = self.x + column_word * 32
                  out_pixels.append(pack_pixels_to_bitblt_word(src_pixels[row],
                                                               x_offset,
+                                                              x_max))
+
+-        return ''.join(out_pixels)
++        return b''.join(out_pixels)
+
+     def image_bits_color(self):
+         """
 @@ -200,10 +200,10 @@ class PebbleBitmap(object):
  
          assert self.bitdepth is not None
