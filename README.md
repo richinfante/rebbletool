@@ -30,7 +30,7 @@ https://developer.rebble.io/developer.pebble.com/guides/tools-and-resources/pebb
 - `wipe`
 - `emu-time-format --format <12h/24h>`
 - `emu-battery --percent [0-100] [--charging]`
-- `emu-tap --direction <+x|-x|+y|-y|+z|-z>`
+- `emu-tap --direction <x+|x-|y+|y-|z+|z->`
 - `emu-compass --heading <0-360>`
 - `emu-app-config` (--file seems to not set up the callback properly). This also assumes your config page implements the `return_to` query param behavior [described in the docs](https://developer.rebble.io/developer.pebble.com/guides/user-interfaces/app-configuration-static/index.html)
 
