@@ -116,6 +116,9 @@ rebble build
 # install on your phone
 rebble install --phone <ip>
 
+# setup for emulator (Linux only!)
+sudo apt install libfdt-dev
+
 # install on emulator
 # this works on x86 mac, and x86 linux
 rebble install --emulator <i>
